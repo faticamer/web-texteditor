@@ -218,6 +218,11 @@ svg {
     color: azure;
 }
 
+.notepad-area.light-mode:focus {
+    background-color:#d7ad88;
+    color: azure;
+}
+
 /*
     <- Button pane modifications listed below ->
 */
@@ -257,9 +262,8 @@ svg {
 }
 /* Extracting the first and the last button in the button row */
 
-/* Defining the tooltip container for the first button */
-.tooltip-container-button { 
-    display: none;       
+/* Defining the tooltip container for the first section button */
+.tooltip-container-button {
     position: absolute;
     top: -30px;
     left: 0;
@@ -267,12 +271,28 @@ svg {
     color: #c0c0c0;
     padding: 5px 10px;    
     width: 50vh;    
-    transition: opacity 0.3s ease-in-out;    
+    opacity: 0;
+    transition: opacity 0.5s; /* Set the transition property */   
+}
+
+/* Defining the tooltip container for the last button */
+.tooltip-container-button-last {      
+    position: absolute;
+    top: -30px;
+    right: 0;
+    background-color: #333;
+    color: #c0c0c0;
+    padding: 5px 10px;    
+    width: 50vh;
+    opacity: 0;
+    transition: opacity 0.5s; /* Set the transition property */
 }
 
 .first-button-in-sequence:hover .tooltip-container-button {
     display: block;    
-    border-radius: 10px 10px 0px 0px;    
+    border-radius: 10px 10px 0px 0px;
+    opacity: 1;
+    transition-delay: 1s;
 }
 
 .first-button-in-sequence:hover {
@@ -280,22 +300,11 @@ svg {
 }
 /* END of Defining the tooltip container for the first button */
 
-
-/* Defining the tooltip container for the last button */
-.tooltip-container-button-last {
-    display: none;       
-    position: absolute;
-    top: -30px;
-    right: 0;
-    background-color: #333;
-    color: #c0c0c0;
-    padding: 5px 10px;    
-    width: 50vh;       
-}
-
 .last-button-in-sequence:hover .tooltip-container-button-last {
     display: block;
-    border-radius: 10px 10px 0px 0px;    
+    border-radius: 10px 10px 0px 0px;
+    opacity: 1;
+    transition-delay: 1s;  
 }
 
 .last-button-in-sequence:hover {
@@ -309,17 +318,27 @@ svg {
 
 .button-row button:nth-child(n+2):nth-child(-n+16):hover .tooltip-container-button {
     display: block;
-    border-radius: 10px 10px 0px 0px;   
+    border-radius: 10px 10px 0px 0px; 
+    opacity: 1;
+    transition-delay: 1s;
 }
 
 .button-row button:nth-child(n+2):nth-child(-n+16):hover .tooltip-container-button-last {
     display: block;
     border-radius: 10px 10px 0px 0px;
+    opacity: 1;
+    transition-delay: 1s;
 }
 
-.button-row button:hover {
+.button-dark-mode:hover {
     transition: all 0.3s ease 0s;
-    background-color: #AA0000;    
+    background-color: #AA0000;
+    cursor: pointer;
+}
+
+.button-dark-mode.button-light-mode:hover {
+    transition: all 0.3s ease 0s;
+    background-color: #7b634e;
     cursor: pointer;
 }
 

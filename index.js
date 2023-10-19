@@ -67,10 +67,10 @@ function toggleLightMode () {
 
         if(isNightMode) {
             nightmodeSvg.replaceWith(newSvg);
-            logo.setAttribute('src', '../public/images/vimer-light.png');
+            logo.setAttribute('src', './public/images/vimer-light.png');
         } else {
             newSvg.replaceWith(nightmodeSvg);
-            logo.setAttribute('src', '../public/images/vimer2.png');
+            logo.setAttribute('src', './public/images/vimer2.png');
         }
 
         // Toggle the necessary classes that simulate the light mode
@@ -348,15 +348,19 @@ function exportAsTxt () {
         const text = textContainer.innerHTML;
         // console.log(text);
 
-        // Creating a Blob object - Binary Large Object
-        const blob = new Blob([text], { type : 'text/plain'});
-        
-        // Creating a temporary link to download the Blob
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = nameOfTheFile + ".txt";
+        if (text) {
+            // Creating a Blob object - Binary Large Object
+            const blob = new Blob([text], { type : 'text/plain'});
+            
+            // Creating a temporary link to download the Blob
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = nameOfTheFile + ".txt";
 
-        a.click();   
+            a.click();   
+        } else {
+            alert("No text entered.");
+        }
     } 
 }
 
@@ -408,6 +412,10 @@ function redirect(id) {
         alert("Error");
         return;
     }
+}
+
+function redirectToVimer() {
+    window.open("https://github.com/faticamer/vimer-texteditor", "_blank");
 }
 
 toggleLightMode();
