@@ -1,0 +1,716 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200;300&display=swap');
+
+* {
+    padding: 0;
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    box-sizing: border-box;            
+}
+
+html {
+    scroll-snap-type: y mandatory;
+    scroll-behavior: smooth;
+}
+
+body {
+    background-color: black;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25' viewBox='0 0 1600 800'%3E%3Cg %3E%3Cpolygon fill='%23220000' points='1600 160 0 460 0 350 1600 50'/%3E%3Cpolygon fill='%23440000' points='1600 260 0 560 0 450 1600 150'/%3E%3Cpolygon fill='%23660000' points='1600 360 0 660 0 550 1600 250'/%3E%3Cpolygon fill='%23880000' points='1600 460 0 760 0 650 1600 350'/%3E%3Cpolygon fill='%23A00' points='1600 800 0 800 0 750 1600 450'/%3E%3C/g%3E%3C/svg%3E");
+    background-attachment: fixed;
+    background-size: cover;
+    transition: .3s ease;
+}
+
+.active {
+    background-color: #FFFFFF;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25' viewBox='0 0 1600 800'%3E%3Cg %3E%3Cpolygon fill='%23ecdcd2' points='1600 160 0 460 0 350 1600 50'/%3E%3Cpolygon fill='%23d9baa5' points='1600 260 0 560 0 450 1600 150'/%3E%3Cpolygon fill='%23c59779' points='1600 360 0 660 0 550 1600 250'/%3E%3Cpolygon fill='%23b2754c' points='1600 460 0 760 0 650 1600 350'/%3E%3Cpolygon fill='%239F521F' points='1600 800 0 800 0 750 1600 450'/%3E%3C/g%3E%3C/svg%3E");
+    background-attachment: fixed;
+    background-size: cover;
+}
+
+.no-transition {
+    transition: none !important; /* Disable CSS transitions */
+    animation: none !important; /* Disable CSS animations */
+    transform: none !important;
+  }
+
+section {
+    height: 100vh;
+    scroll-snap-align: start;    
+}
+
+svg {
+    fill: #c0c0c0;
+}
+
+.nav-header {    
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: auto -16px;
+    padding: 8px 32px;    
+    background-color: #000000;
+    z-index: 100;     
+}
+
+.nav-header-light {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: auto -16px;
+    padding: 8px 32px;    
+    background-color: #42413f;    
+    z-index: 100;     
+}
+
+.nav-header h2 {
+    cursor: pointer;
+    color: #c0c0c0;
+    transition: all 0.3s ease 0s; 
+}
+
+.nav-header h2:hover {        
+    color: #AA0000;
+}
+
+.main-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 90vh;    
+}
+
+
+.notepad-container {     
+    width: 70%;
+    height: 70%;
+    margin-bottom: 60px;    
+}
+
+/* Styling the logo */
+.logo {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.logo img{
+    height: 50px;
+    width: 50px;
+    margin-right: 20px;    
+}
+
+/*
+    <- Navigation pane modifications listed below ->
+*/
+.nav-links {
+    list-style: none;  
+    display: flex;
+    justify-content: center;
+    flex-direction: row;  
+}
+
+.nav-links li{
+    /*display: inline-block;*/
+    padding: 10px 25px;
+}
+
+.nav-links li a {
+    text-decoration: none;
+    font-weight: bold;
+    transition: all 0.3s ease 0s;
+    color:#c0c0c0;
+}
+
+.nav-links li button {    
+    text-decoration: none;
+    border: none;    
+}
+
+.nav-links li a:hover {    
+    transition: all 0.3s ease 0s;
+    color: #AA0000;
+}
+
+/* Tracking Night/Light mode Changes*/
+.nightmode-button {
+    background-color: black;
+    margin-top: 3px;
+    width: 17px;
+    height: 17px;    
+}
+
+.nightmode-button-svg {
+    margin-top: 3px;
+    width: 17px;
+    height: 17px;
+    transition: all 0.3s ease 0s;
+}
+
+.lightmode-button-svg {
+    margin-top: 3px;
+    width: 17px;
+    height: 17px;
+    transition: all .3s ease 0s;
+}
+
+.lightmode-button {
+    background-color: #42413f;    
+}
+
+.nightmode-button-svg:hover {
+    fill: #AA0000;
+    cursor: pointer;
+}
+
+.lightmode-button-svg:hover {
+    fill: bisque;
+    cursor: pointer;
+}
+
+.disable {
+    display: none;
+}
+
+/*
+    <- Textarea pane modifications listed below ->
+*/
+.textarea-section {
+    margin: 0px;
+    padding: 0;
+}
+
+.notepad-area {    
+    color: azure;
+    margin: 0;
+    padding: 0;
+    background-color: #1A1A1A;
+    width: 100%;
+    height: 100%;
+    resize: none;
+    border: 1px none;
+    border-radius: 0 0 15px 15px;
+    transition: outline-color 0.3s, box-shadow 0.3s, background-color 0.3s, border-color 0.3s;
+}
+
+.dark-mode {
+    background-color: #1A1A1A;
+    width: 100%;
+    height: 100%;
+    resize: none;
+    border: 1px none;
+    border-radius: 0 0 15px 15px;
+    transition: outline-color 0.3s, box-shadow 0.3s, background-color 0.3s, border-color 0.3s;
+}
+
+.light-mode {    
+    background-color: #c9a17e;
+    width: 100%;
+    height: 100%;
+    resize: none;    
+    border-radius: 0 0 15px 15px;
+    box-shadow: 5px 5px 12px #333;
+    transition: outline-color 0.3s, box-shadow 0.3s, background-color 0.3s, border-color 0.3s;
+}
+
+.notepad-area:focus {
+    outline: none;
+    background-color: #333333;
+    color: azure;
+}
+
+/*
+    <- Button pane modifications listed below ->
+*/
+
+.button-row {
+    display: flex;  
+    width: 100%;  
+}
+
+.button-dark-mode {
+    flex-grow: 1;
+    padding: 20px 20px;   
+    text-align: center;
+    background-color: #42413f;
+    transition: all 0.3s ease 0s;    
+    border: none;   
+}
+
+.button-light-mode {
+    background-color: #a8a4a2;
+    flex-grow: 1;
+    padding: 20px 20px;   
+    text-align: center;    
+    transition: all 0.3s ease 0s;
+    border: none;
+}
+
+/* Extracting the first and the last button in the button row */
+.first-button-in-sequence {
+    border-radius: 15px 0px 0px 0px;
+    position: relative;      
+}
+
+.last-button-in-sequence {
+    border-radius: 0px 15px 0px 0px;
+    position: relative;
+}
+/* Extracting the first and the last button in the button row */
+
+/* Defining the tooltip container for the first button */
+.tooltip-container-button { 
+    display: none;       
+    position: absolute;
+    top: -30px;
+    left: 0;
+    background-color: #333;
+    color: #c0c0c0;
+    padding: 5px 10px;    
+    width: 50vh;    
+    transition: opacity 0.3s ease-in-out;    
+}
+
+.first-button-in-sequence:hover .tooltip-container-button {
+    display: block;    
+    border-radius: 10px 10px 0px 0px;    
+}
+
+.first-button-in-sequence:hover {
+    border-radius: 0px;
+}
+/* END of Defining the tooltip container for the first button */
+
+
+/* Defining the tooltip container for the last button */
+.tooltip-container-button-last {
+    display: none;       
+    position: absolute;
+    top: -30px;
+    right: 0;
+    background-color: #333;
+    color: #c0c0c0;
+    padding: 5px 10px;    
+    width: 50vh;       
+}
+
+.last-button-in-sequence:hover .tooltip-container-button-last {
+    display: block;
+    border-radius: 10px 10px 0px 0px;    
+}
+
+.last-button-in-sequence:hover {
+    border-radius: 0px;
+}
+
+/* Defining the properties for the rest of the buttons */
+.button-row button:nth-child(n+2):nth-child(-n+16) {
+    position: relative;   
+}
+
+.button-row button:nth-child(n+2):nth-child(-n+16):hover .tooltip-container-button {
+    display: block;
+    border-radius: 10px 10px 0px 0px;   
+}
+
+.button-row button:nth-child(n+2):nth-child(-n+16):hover .tooltip-container-button-last {
+    display: block;
+    border-radius: 10px 10px 0px 0px;
+}
+
+.button-row button:hover {
+    transition: all 0.3s ease 0s;
+    background-color: #AA0000;    
+    cursor: pointer;
+}
+
+/* <<<< SECTION-TWO STYLES >>>>*/
+.section-two {
+    position: relative;
+    display: flex;
+    width: 100%;
+    height: 100vh;
+    align-items: center;
+    justify-content: center;
+}
+
+.main-container-2 {
+    width: 90%;
+    max-width: 95%;
+    height: 90vh;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;    
+}
+
+.main-container-2 img {
+    height: 420px;
+    width: auto;
+    border-radius: 10px;
+    transition: 0.3s ease;
+}
+
+.main-container-2 img:hover {
+    height: 430px;
+    border-radius: 30px;
+    box-shadow: 0px 5px 5px 5px rgba(0, 0, 0, 0.3);
+}
+
+.arrow-up-container {
+    position: absolute;    
+    top: 90%;
+    left: 95%;    
+}
+
+.arrow-up-container-three {
+    position: absolute;
+    top: 87.2%;
+    left: 95%;
+}
+
+/*
+    << Code located below is targetting the whole section-two
+    content along with the image >>
+*/
+.section-two-content {
+    width: 550px;    
+    background-color: #1A1A1A;
+    border-radius: 30px;
+    padding: 10px;
+    transition: .3s ease;
+}
+
+.section-two-content-light {
+    background: #7b634e;
+}
+
+.section-two-content:hover {
+    /*background: linear-gradient(90deg, #ff8a00, #e52e71);*/    
+    box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5); 
+}
+
+.section-two-content h1 {
+    color: #c0c0c0;
+    text-transform: capitalize;
+    padding-left: 10px;
+}
+
+.section-two-content h2 {
+    color:#AA0000;
+    padding-left: 10px;
+}
+
+.span-h2 {
+    color: #c0c0c0;
+}
+
+.section-two-paragraph {
+    color: #c0c0c0;
+    font-size: 16px;
+    font-weight: bold;    
+    margin-top: 10px;
+    text-align: justify;
+    padding: 10px;
+    background-color: #1A1A1A;
+    border-radius: 30px;
+}
+
+.section-two-paragraph-light {
+    background-color: #7b634e;
+}
+
+.section-two-content button {
+    display: inline-flex;
+    align-items: center;    
+    margin: 25px 0px 5px 10px;
+    background: #42413f;
+    color: #c0c0c0;
+    text-decoration: none;
+    cursor: pointer;
+    border: 2px solid transparent;
+    font-weight: bold;
+    padding: 13px 30px;
+    border-radius: 30px;    
+    transition: .3s ease;
+}
+
+.section-two-content button:hover{
+    background: #333;    
+}
+
+.git-button-text {
+    margin-right: 8px;
+    color: #c0c0c0;  
+}
+
+.git-icon {
+    width: 25px;
+    height: 25px;
+}
+
+span {
+    color:#AA0000;
+}
+
+/*
+    <<<< SECTION-THREE STYLES >>>>
+*/
+
+.section-three {
+    position: relative;
+    display: flex;    
+    justify-content: center;
+    flex-direction: column;
+    height: 100vh;
+    align-items: center;
+    padding: 3rem;
+}
+
+.card-h1-container {
+    width: 90%;
+    display: flex;
+    justify-content: center;    
+}
+
+.card-h1 {
+    color: #c0c0c0;    
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: 0.3s ease;
+}
+
+.card-h1-light {
+    color: #7b634e;
+}
+
+.card-h1-container h1:hover {
+    color: #AA0000;
+}
+
+.card-container {
+    width: 90%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+    height: 100vh;
+}
+
+/* Target articles */
+
+.card-list {
+    display: flex;
+    padding: 3rem;
+    overflow-x: scroll;
+}
+
+.card {
+    height: 350px;
+    width: 400px;
+    min-width: 250px;
+    padding: 1.5rem;
+    border-radius: 16px;
+    background: #333333;
+    box-shadow: -1rem 0 3rem #000;
+    display: flex;
+    flex-direction: column;
+    transition: .2s;
+    margin: 0;
+    scroll-snap-align: start;
+    clear: both;
+    position: relative;
+}
+
+.card-light {
+    background: #7b634e;
+}
+
+.card:focus-within~.card, .card:hover~.card {
+    transform: translateX(130px);
+}
+
+.card:hover {
+    transform: translateY(-1rem);
+}
+
+.card:not(:first-child) {
+    margin-left: -130px;
+}
+
+
+.card-header {
+    margin-bottom: auto;
+}
+
+.card-header p {
+    font-size: 14px;
+    margin: 0 0 1rem;
+    color: #ff8a00;
+}
+
+.card-header h2 {
+    font-size: 20px;
+    margin: .25rem 0 auto;
+    text-decoration: none;
+    color: #c0c0c0;
+    border: 0;
+    display: inline-block;
+    cursor: pointer;    
+}
+
+.card-header h2:hover {
+    background: linear-gradient(90deg,#ff8a00,#e52e71);
+    text-shadow: none;
+    -webkit-text-fill-color: transparent;
+    -webkit-background-clip: text;
+    background-clip: text;
+}
+
+.card-author {
+    margin: 3rem 0 0;
+    display: grid;
+    grid-template-columns: 75px 1fr;
+    align-items: center;
+    position: relative;
+}
+
+.card-svg {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;    
+    display: block;
+    overflow: hidden;
+    margin: 16px 10px;
+}
+
+.author-avatar {
+    grid-area: auto;
+    align-self: start;
+    position: relative;
+    box-sizing: border-box;
+}
+
+.author-avatar img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;    
+    display: block;
+    overflow: hidden;
+    margin: 16px 10px;
+}
+
+.author-name {
+    grid-area: auto;
+    box-sizing: border-box;
+    color: #ff8a00;
+}
+
+.author-name-prefix {
+    font-style: normal;
+    font-weight: 700;
+    color: #c0c0c0;
+}
+
+.half-circle {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 60px;
+    height: 48px;
+    fill: none;
+    stroke: #AA0000;
+    stroke-width: 8;
+    stroke-linecap: round;
+    pointer-events: none;
+}
+
+/* Target footer container*/
+.footer-container {
+    display: flex;    
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 90%;
+}
+
+.footer-3 {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.social-icons-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;    
+}
+
+.social-icons-container li{
+    list-style: none;
+    padding: 10px 20px;
+}
+
+.social-svg {
+    width: 30px;
+    height: 30px;
+    transition: .2s ease;
+}
+
+.social-svg:hover {
+    fill: #333;
+}
+
+/* JAVASCRIPT TOGGLED CLASSES*/
+/* Button go up to Home page */
+.go-up-button {        
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 2px solid #c0c0c0;
+    background: none;
+    cursor: pointer;
+    transition: .2s ease;    
+}
+
+.go-up-button:hover {
+    background-color: #333;
+    border: none;
+}
+
+/* Dynamically accessed classes */
+.bolded {
+    font-weight: bold;
+    color: azure;
+}
+
+.italic {
+    font-style: italic;
+    color: azure;
+}
+
+.underlined {
+    text-decoration: underline;
+    color: azure;
+}
+
+.highlighted {
+    text-decoration: underline;
+    color: cadetblue;
+    cursor: pointer;
+}
+
+.word-capitalize {
+    text-transform: uppercase;
+    color: azure;
+}
+
+.custom-unordered-list {
+    margin-left: 25px;
+}
+
+.custom-ordered-list {
+    margin-left: 25px;
+    list-style: decimal;
+}
