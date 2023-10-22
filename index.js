@@ -4,6 +4,7 @@ const tools = document.querySelector(".button-dark-mode");
 const fileButton = document.getElementById("file-button");
 const fileInput = document.getElementById("file-input");
 let scrollingTimer;
+/*Commit test*/
 
 window.addEventListener('scroll', function() {
     // Select all elements with class 'card'
