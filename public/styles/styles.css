@@ -269,8 +269,9 @@ svg {
     left: 0;
     background-color: #333;
     color: #c0c0c0;
-    padding: 5px 10px;    
-    width: 50vh;    
+    padding: 5px 10px;
+    width: 50vh;
+    border-radius: 10px 10px 0px 0px;
     opacity: 0;
     transition: opacity 0.5s; /* Set the transition property */   
 }
@@ -284,6 +285,7 @@ svg {
     color: #c0c0c0;
     padding: 5px 10px;    
     width: 50vh;
+    border-radius: 10px 10px 0px 0px;
     opacity: 0;
     transition: opacity 0.5s; /* Set the transition property */
 }
@@ -353,8 +355,8 @@ svg {
 }
 
 .main-container-2 {
-    width: 90%;
-    max-width: 95%;
+    width: 95%;
+    max-width: 95%;    
     height: 90vh;
     margin: 0 auto;
     display: flex;
@@ -365,6 +367,7 @@ svg {
 .main-container-2 img {
     height: 420px;
     width: auto;
+    max-width: 70%;
     border-radius: 10px;
     transition: 0.3s ease;
 }

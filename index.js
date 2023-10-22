@@ -1,7 +1,8 @@
 // textContainer variable
 const textContainer = document.querySelector(".notepad-area");
-const savedURLs = [];
-let hyperlinksHandler = 0;
+const tools = document.querySelector(".button-dark-mode");
+const fileButton = document.getElementById("file-button");
+const fileInput = document.getElementById("file-input");
 let scrollingTimer;
 
 window.addEventListener('scroll', function() {
@@ -24,12 +25,21 @@ window.addEventListener('scroll', function() {
     }, 350);
 });
 
-/* window.addEventListener('paste', (event) => {
-    const range = document.createRange();
-    range.selectNodeContents(textContainer);
-    const firstChild = range.startContainer.childNodes[range.startOffset];    
+tools.addEventListener("click", function () {    
+    textContainer.focus();
 })
- */
+
+fileButton.addEventListener("click", () => {
+    fileInput.click();
+})
+
+fileInput.addEventListener("change", async () => {
+    const [file] = fileInput.files;
+    
+    if(file) {
+        textContainer.innerText = await file.text();
+    }
+})
 
 // Function that handles light/night mode mode
 function toggleLightMode () {
@@ -132,7 +142,7 @@ function scrollToTop () {
     });
 };
 
-function saveFile () {
+function openFile () {
     // capture the entire div
 
     // To be resolved.
@@ -174,6 +184,9 @@ function increaseFontSize () {
         alert("Maximum size reached.");
         return;
     }
+
+    // Focus on container
+    textContainer.focus();
 }
 
 function decreaseFontSize () {
@@ -201,23 +214,25 @@ function decreaseFontSize () {
         alert("Minimum size reached.");
         return;
     }
+    // Focus on container
+    textContainer.focus();
 }
 
 // Functions that handle text-decoration - Bold, Italic, Underline
 function applyBold () {
-    checkAndApplySelection("bolded");
+    checkAndApplySelectionBold();    
 }
 
 function applyItalic () {
-    checkAndApplySelection("italic");
+    checkAndApplySelectionItalic();
 }
 
 function applyUnderline () {
-    checkAndApplySelection("underlined");
+    checkAndApplySelectionUnderline();
 }
 
 function capitalizeWord () {
-    checkAndApplySelection("word-capitalize");
+    checkAndApplySelectionCapitalize();
 }
 
 function applyBulletList () {
@@ -249,6 +264,9 @@ function applyBulletList () {
             // To be resolved.
         })
     }
+
+    // Focus on container
+    textContainer.focus();
 }
 
 function applyNumberedList () {
@@ -279,61 +297,87 @@ function applyNumberedList () {
             // To be resolved.
         })
     }
+
+    // Focus on container
+    textContainer.focus();
 }
 
 // Functions that control the alignment of a text within textContainer
 function alignLeft () {    
     textContainer.style.textAlign = 'left';
+
+    // Focus on container
+    textContainer.focus();
 }
 
 function alignRight () {    
-    textContainer.style.textAlign = 'right';    
+    textContainer.style.textAlign = 'right';
+
+    // Focus on container
+    textContainer.focus();
 }
 
 function alignCenter () {    
     textContainer.style.textAlign = 'center';
+
+    // Focus on container
+    textContainer.focus();
 }
 
 function alignJustify () {    
     textContainer.style.textAlign = 'justify';
+
+    // Focus on container
+    textContainer.focus();
 }
 
 function addHyperlink() {
     // Obtain user-selected text
-    const selectedText = window.getSelection().toString();    
+    const selectedText = window.getSelection();    
+    const isStyled = selectedText.anchorNode.parentElement.classList.contains('highlighted');
     
+    // Defined regexPattern variable to ensure user included some of the necessary components of every URL.
+    const regexPattern = /^(http|https|www|com)/;
+
     // Check if the selection is empty, if not execute if block
     if(selectedText) {
-        // Defined regexPattern variable to ensure user included some of the necessary components of every URL.
-        const regexPattern = /^(http|https|www|com)/;
-        // Convert to lowercase and search for blank spaces to test for validity
-        const URL = prompt("Enter a valid URL: ");
-        URL.toLowerCase();
-
-        // To be resolved using hash maps
-        savedURLs.push(URL);
-
-        // Obtain selected piece of container
-        const selectedPortion = window.getSelection();
-
-        // Testing the regexPattern against user-prompted URL
-        if(regexPattern.test(URL)) {            
-            let range = selectedPortion.getRangeAt(0);            
-
-            // Create anchor element to handle redirection
-            const link = document.createElement('a');
-            link.setAttribute("class", "highlighted");          
-            link.href = URL;
-            link.target = "_blank";
-            link.textContext = selectedText;
-            link.setAttribute("onclick", "handleDynamicAnchor(URL)");
-
-            // Wrap the necessary (selected) part with an anchor tag containing all necessary attributes            
-            range.surroundContents(link);
+        if(isStyled) {
+            // Since Range.startContainer and Range.endContainer both refer to the same 
+            // node, range.commonAncestorContainer is that node
+            const parentElement = selectedText.anchorNode.parentElement;
+            parentElement.replaceWith(document.createTextNode(parentElement.textContent));
         } else {
-            alert("The URL you provided is not valid.");
+            // Convert to lowercase and search for blank spaces to test for validity
+            const URL = prompt("Enter a valid URL: ");
+            let newURL = URL.toLowerCase();
+
+            // Testing the regexPattern against user-prompted URL
+            if(regexPattern.test(newURL)) {            
+                let range = selectedText.getRangeAt(0);            
+
+                // Create anchor element to handle redirection
+                const link = document.createElement('a');
+                link.setAttribute("class", "highlighted");          
+                link.href = newURL;
+                link.target = "_blank";
+                link.textContext = selectedText;
+
+                // Function used to assign necessary href to a hyperlinked element
+                function handleDynamicAnchor() {
+                    window.open(newURL, "_blank");
+                }
+                link.onclick = handleDynamicAnchor;
+
+                // Wrap the necessary (selected) part with an anchor tag containing all necessary attributes            
+                range.surroundContents(link);
+            }
         }
-    }    
+    } else {
+        alert("No text selected!");
+    }
+
+    // Focus on container
+    textContainer.focus();
 }
 
 function exportAsTxt () {
@@ -362,40 +406,134 @@ function exportAsTxt () {
             alert("No text entered.");
         }
     } 
+
+    // Focus on container
+    textContainer.focus();
 }
 
-function handleDynamicAnchor() {     
-    // Handle more than one hyperlink    
-    window.open(savedURLs[hyperlinksHandler]);
-
-    // Insufficient, if the first added hyperlink is to be accessed after 5 attempts, the
-    // array counter will advance to the index that is not present nor defined in an array
-    // hyperlinksHandler++;
-
-    // To be resolved.
-};
-
-function checkAndApplySelection(className) {
+// Separate into three functions :)) Refer to the one on PC
+function checkAndApplySelectionBold() {
     // Fetch the text user selected
     const selectedText = window.getSelection();
+    const isStyled = selectedText.anchorNode.parentElement.classList.contains('bolded');
 
     // Check if selectedText is empty - If yes, this means user chose nothing
     if(selectedText) {
-        // Define selection
-        let selectedPortion = window.getSelection();
-
         /* Define range using user-chosen selection
          Using this range we can wrap html around appropriate piece of text */
-        let range = selectedPortion.getRangeAt(0);
+        let range = selectedText.getRangeAt(0);        
 
-        // Defining html element that is to be used when wrapping a text
-        let span = document.createElement('span');
-        span.setAttribute("class", className);
-        span.textContent = window.getSelection().toString();
+        if(isStyled) {
+            // Since Range.startContainer and Range.endContainer both refer to the same 
+            // node, range.commonAncestorContainer is that node
+            const parentElement = selectedText.anchorNode.parentElement;
+            parentElement.replaceWith(document.createTextNode(parentElement.textContent));
+        } else {
+            // Defining html element that is to be used when wrapping a text
+            let span = document.createElement('span');
+            span.setAttribute('class', 'bolded');
+            span.textContent = window.getSelection().toString();
 
-        // Surround chosen text with created html element
-        range.surroundContents(span);
+            // Surround chosen text with created html element
+            range.surroundContents(span);   
+        }
     }
+
+    // Focus on container
+    textContainer.focus();
+}
+
+function checkAndApplySelectionItalic() {
+    // Fetch the text user selected
+    const selectedText = window.getSelection();
+    const isStyled = selectedText.anchorNode.parentElement.classList.contains('italic');
+
+    // Check if selectedText is empty - If yes, this means user chose nothing
+    if(selectedText) {
+        /* Define range using user-chosen selection
+         Using this range we can wrap html around appropriate piece of text */
+        let range = selectedText.getRangeAt(0);        
+
+        if(isStyled) {
+            // Since Range.startContainer and Range.endContainer both refer to the same 
+            // node, range.commonAncestorContainer is that node
+            const parentElement = selectedText.anchorNode.parentElement;
+            parentElement.replaceWith(document.createTextNode(parentElement.textContent));
+        } else {
+            // Defining html element that is to be used when wrapping a text
+            let span = document.createElement('span');
+            span.setAttribute('class', 'italic');
+            span.textContent = window.getSelection().toString();
+
+            // Surround chosen text with created html element
+            range.surroundContents(span);   
+        }
+    }
+
+    // Focus on container
+    textContainer.focus();
+}
+
+function checkAndApplySelectionUnderline() {
+    // Fetch the text user selected
+    const selectedText = window.getSelection();
+    const isStyled = selectedText.anchorNode.parentElement.classList.contains('underlined');
+
+    // Check if selectedText is empty - If yes, this means user chose nothing
+    if(selectedText) {
+        /* Define range using user-chosen selection
+         Using this range we can wrap html around appropriate piece of text */
+        let range = selectedText.getRangeAt(0);        
+
+        if(isStyled) {
+            // Since Range.startContainer and Range.endContainer both refer to the same 
+            // node, range.commonAncestorContainer is that node
+            const parentElement = selectedText.anchorNode.parentElement;
+            parentElement.replaceWith(document.createTextNode(parentElement.textContent));
+        } else {
+            // Defining html element that is to be used when wrapping a text
+            let span = document.createElement('span');
+            span.setAttribute('class', 'underlined');
+            span.textContent = window.getSelection().toString();
+
+            // Surround chosen text with created html element
+            range.surroundContents(span);   
+        }
+    }
+
+    // Focus on container
+    textContainer.focus();
+}
+
+function checkAndApplySelectionCapitalize() {
+    // Fetch the text user selected
+    const selectedText = window.getSelection();
+    const isStyled = selectedText.anchorNode.parentElement.classList.contains('word-capitalize');
+
+    // Check if selectedText is empty - If yes, this means user chose nothing
+    if(selectedText) {
+        /* Define range using user-chosen selection
+         Using this range we can wrap html around appropriate piece of text */
+        let range = selectedText.getRangeAt(0);        
+
+        if(isStyled) {
+            // Since Range.startContainer and Range.endContainer both refer to the same 
+            // node, range.commonAncestorContainer is that node
+            const parentElement = selectedText.anchorNode.parentElement;
+            parentElement.replaceWith(document.createTextNode(parentElement.textContent));
+        } else {
+            // Defining html element that is to be used when wrapping a text
+            let span = document.createElement('span');
+            span.setAttribute('class', 'word-capitalize');
+            span.textContent = window.getSelection().toString();
+
+            // Surround chosen text with created html element
+            range.surroundContents(span);   
+        }
+    }
+
+    // Focus on container
+    textContainer.focus();
 }
 
 // Redirect functions for html cards
@@ -411,7 +549,7 @@ function redirect(id) {
     else {
         alert("Error");
         return;
-    }
+    }    
 }
 
 function redirectToVimer() {
