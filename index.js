@@ -1,9 +1,9 @@
-// textContainer variable
 const textContainer = document.querySelector(".notepad-area");
 const tools = document.querySelector(".button-dark-mode");
 const fileButton = document.getElementById("file-button");
 const fileInput = document.getElementById("file-input");
 let scrollingTimer;
+
 /*Commit test*/
 
 window.addEventListener('scroll', function() {
@@ -42,6 +42,16 @@ fileInput.addEventListener("change", async () => {
     }
 })
 
+textContainer.addEventListener("input", function () {
+    const charField = document.querySelector(".character-count p:nth-child(2)");
+    const text = textContainer.textContent;
+    const textWithoutWhitespace = text.replace(/\s/g, '');
+    const characterCount = textWithoutWhitespace.length;
+
+    // Update the <p> element's content with the character count
+    charField.textContent = `Char count: ${characterCount}`;
+});
+
 // Function that handles light/night mode mode
 function toggleLightMode () {
     let isNightMode = false;
@@ -66,15 +76,6 @@ function toggleLightMode () {
 
     toggleLightButton.addEventListener("click", () => {
         isNightMode = !isNightMode;
-
-        // To be resolved...
-        textContainer.addEventListener("focus", () => {
-            if(isNightMode) {
-                //
-            } else {
-                //
-            }
-        })
 
         if(isNightMode) {
             nightmodeSvg.replaceWith(newSvg);
@@ -143,21 +144,37 @@ function scrollToTop () {
     });
 };
 
-function openFile () {
-    // capture the entire div
-
-    // To be resolved.
-}
-
 function selectFontStyle () {
     const note = "NOTE: Generic Font-family set to sans-serif";
     const query = "\n\nSpecify Font-family, make sure the family exists:";
+    const defaultFont = "Poppins, sans-serif";
+
+    // Use spread operator to convert HTMLCollections to an array
+    let spanArray = [
+    ...document.getElementsByClassName("bolded"),
+    ...document.getElementsByClassName("italic"),
+    ...document.getElementsByClassName("underlined"),
+    ...document.getElementsByClassName("word-capitalize"),
+    ...document.getElementsByClassName("highlighted")
+    ];
 
     // Ask the user for the Font-Family
     const inputFont = prompt(note + query);
+    if(inputFont === null) { // Check if user cancels the prompt
+        textContainer.style.fontFamily = defaultFont;
+    } else {
+        const finalFont = inputFont + ", sans-serif";
 
-    // There will be no checks done for the input
-    textContainer.style.fontFamily = inputFont + ", sans-serif";
+        // There will be no checks done for the input
+        textContainer.style.fontFamily = finalFont;    
+        
+        // Apply the font-family to all spans - if any    
+        if(spanArray.length != 0) {        
+            spanArray.forEach((spanItem) => {            
+                spanItem.style.fontFamily = finalFont;                
+            })
+        }
+    }
 }
 
 function increaseFontSize () {
@@ -236,67 +253,130 @@ function capitalizeWord () {
     checkAndApplySelectionCapitalize();
 }
 
+// Restricted functionality
 function applyBulletList () {
-    const selectedText = window.getSelection().toString();
+    // const selectedText = window.getSelection().toString();
+    const selectedPortion = window.getSelection();    
 
-    if(selectedText) {
-        // Create li html element and apply a class to it    
-        const listElement = document.createElement('li');
-        listElement.classList.add('custom-unordered-list');
+    // Create li html element and apply a class to it    
+    const listElement = document.createElement('li');
+    listElement.classList.add('custom-unordered-list');
 
-        // Crate ul html element and apply a class to it
-        const unorderedList = document.createElement('ul');
-        unorderedList.classList.add('u-list');
-        
-        // Define range for beginning of the editable content until
-        // the end of it
+    // Crate ul html element and apply a class to it
+    const unorderedList = document.createElement('ul');
+    unorderedList.classList.add('u-list');
+    
+    // 1. Case when container is empty - trim used for getting rid of white spaces
+    if(textContainer.textContent.trim() === '') {
+        // Here we need to check if user is trying to disable the li elements
         let range = document.createRange();
-        range.selectNodeContents(textContainer);
-
-        // Check if range.extractContents() is faulty
-        listElement.appendChild(range.extractContents());        
+        range.selectNodeContents(textContainer);        
+        range.insertNode(unorderedList);
         unorderedList.appendChild(listElement);
 
-        range.insertNode(unorderedList);        
-    } else {
-        document.addEventListener('keydown', function (event) {
-            // When Enter is pressed, the next line starts with li
+    } else if (selectedPortion) {
+        if(hasListElements(selectedPortion)) {
+            // Get the common ancestor element
+            let range = document.createRange();
+            range.selectNodeContents(selectedPortion.anchorNode);
+            const commonAncestor = range.commonAncestorContainer;            
 
-            // To be resolved.
-        })
+            // Check if the common ancestor is an element node - it could be a text node
+            if(commonAncestor.nodeType === Node.ELEMENT_NODE) { // not satisfied                
+                // Iterate over child nodes
+                const childNodes = commonAncestor.childNodes;                
+                for(let i = 0; i < childNodes.length; i++) {
+                    const node = childNodes[i];
+
+                    // Check if node is within range
+                    if(range.intersectsNode(node)) {
+                        node.replaceWith(document.createTextNode(node.textContent + "\n"));
+                    }
+                } // End of loop
+                
+                // Removing the ul as well
+                commonAncestor.replaceWith(document.createTextNode(commonAncestor.textContent));
+                return;
+            }
+        } else {            
+            // Define range
+            let range = document.createRange();
+            range.selectNodeContents(selectedPortion.anchorNode);
+            range.surroundContents(listElement);
+            
+            // Range must be updated again, since new element was inserted, and previously detected anchorNode is now different
+            range.selectNodeContents(selectedPortion.anchorNode.parentNode);
+
+            // Add li items
+            range.surroundContents(unorderedList); 
+        }
+    } else {
+        // Temporary adjustment
+        alert("Not possible to implement bullet list there.");
     }
 
     // Focus on container
     textContainer.focus();
 }
 
-function applyNumberedList () {
-    const selectedText = window.getSelection().toString();
+// Restricted functionality
+function applyNumberedList () { 
+    // const selectedText = window.getSelection().toString();
+    const selectedPortion = window.getSelection();    
 
-    if(selectedText) {
-        // Create li html element and apply a class to it
-        const listElement = document.createElement('li');
-        listElement.classList.add('custom-ordered-list');
+    // Create li html element and apply a class to it    
+    const listElement = document.createElement('li');
+    listElement.classList.add('custom-ordered-list');
 
-        // Crate ul html element and apply a class to it
-        const orderedList = document.createElement('ul');
-        orderedList.classList.add('u-list');
-
-        // Define range for beginning of the editable content until
-        // the end of it
+    // Crate ul html element and apply a class to it
+    const unorderedList = document.createElement('ul');
+    unorderedList.classList.add('u-list');
+    
+    // 1. Case when container is empty - trim used for getting rid of white spaces
+    if(textContainer.textContent.trim() === '') {
+        // Here we need to check if user is trying to disable the li elements
         let range = document.createRange();
-        range.selectNodeContents(textContainer);
-        
-        listElement.appendChild(range.extractContents());        
-        orderedList.appendChild(listElement);
+        range.selectNodeContents(textContainer);        
+        range.insertNode(unorderedList);
+        unorderedList.appendChild(listElement);
 
-        range.insertNode(orderedList);
+    } else if (selectedPortion) {        
+        if(selectedPortion.rangeCount > 0) {
+            const range = selectedPortion.getRangeAt(0);
+
+            // Get the common ancestor element
+            const commonAncestor = range.commonAncestorContainer;            
+
+            // Check if the common ancestor is an element node - it could be a text node
+            if(commonAncestor.nodeType === Node.ELEMENT_NODE) {
+                // Iterate over child nodes
+                const childNodes = commonAncestor.childNodes;                
+                for(let i = 0; i < childNodes.length; i++) {
+                    const node = childNodes[i];
+
+                    // Check if node is within range
+                    if(range.intersectsNode(node)) {
+                        node.replaceWith(document.createTextNode(node.textContent + "\n"));
+                    }
+                }
+                // Removing the ul as well
+                commonAncestor.replaceWith(document.createTextNode(commonAncestor.textContent));
+            }
+        } else {
+            // Define range
+            let range = document.createRange();
+            range.selectNodeContents(selectedPortion.anchorNode);
+            range.surroundContents(listElement);
+            
+            // Range must be updated again, since new element was inserted, and previously detected anchorNode is now different
+            range.selectNodeContents(selectedPortion.anchorNode.parentNode);
+
+            // Add li items
+            range.surroundContents(unorderedList); 
+        }
     } else {
-        document.addEventListener('keydown', function (event) {
-            // When Enter is pressed, the next line starts with li
-
-            // To be resolved.
-        })
+        // Temporary adjustment
+        alert("Not possible to implement bullet list there.");
     }
 
     // Focus on container
@@ -340,6 +420,14 @@ function addHyperlink() {
     // Defined regexPattern variable to ensure user included some of the necessary components of every URL.
     const regexPattern = /^(http|https|www|com)/;
 
+    
+    /* Fetch the current Font Family
+    / Get the computed style */
+    const computedStyle = window.getComputedStyle(textContainer);
+
+    // Get the font family
+    const capturedFontFamily = computedStyle.getPropertyValue('font-family');   
+
     // Check if the selection is empty, if not execute if block
     if(selectedText) {
         if(isStyled) {
@@ -371,6 +459,9 @@ function addHyperlink() {
 
                 // Wrap the necessary (selected) part with an anchor tag containing all necessary attributes            
                 range.surroundContents(link);
+
+                // Set the span's font-family depending on text container's font-family
+                link.style.fontFamily = capturedFontFamily;
             }
         }
     } else {
@@ -381,16 +472,36 @@ function addHyperlink() {
     textContainer.focus();
 }
 
+// New functionality : Remove all pre-defined styles for pasted text
+function purifyContent() {
+    const range = document.createRange();    
+    range.selectNodeContents(textContainer);    
+    const childSpan = range.extractContents(); // This is a document fragment
+
+    // Replace child node's content (span) with the plain text to remove predefined styling
+    textContainer.textContent = childSpan.textContent;
+}
+
 function exportAsTxt () {
-    var regexPattern = /[!"#$%&\/=?*,.¸~ˇ^˘°˛`˙´˝¨]+/;    
-    const nameOfTheFile = prompt("Enter the name of the file:");    
+    // purifyContent(); Works But Removes style from the textbox
+    const range = document.createRange();
+    range.selectNodeContents(textContainer);
+    const fragment = range.extractContents(); // Removes content and creates Document Fragment
+
+    var regexPattern = /[!"#$%&\/=?*,.¸~ˇ^˘°˛`˙´˝¨]+/;
+    const nameOfTheFile = prompt("Enter the name of the file:");
+
+    if(nameOfTheFile.length === 0) {
+        alert("Name cannot be empty.");
+        return;
+    }
 
     if (regexPattern.test(nameOfTheFile)) {
         alert("Invalid File Name.");
         return;
     } else {
-        // Retrieve the text from the textContainer
-        const text = textContainer.innerHTML;
+        // Retrieve the text from the textContainer        
+        const text = fragment.textContent;
         // console.log(text);
 
         if (text) {
@@ -407,6 +518,8 @@ function exportAsTxt () {
             alert("No text entered.");
         }
     } 
+    // Reset styles in the container since extractContents() removes everything within range
+    textContainer.appendChild(fragment);
 
     // Focus on container
     textContainer.focus();
@@ -418,6 +531,13 @@ function checkAndApplySelectionBold() {
     const selectedText = window.getSelection();
     const isStyled = selectedText.anchorNode.parentElement.classList.contains('bolded');
 
+    /* Fetch the current Font Family
+    / Get the computed style */
+    const computedStyle = window.getComputedStyle(textContainer);
+
+    // Get the font family
+    const capturedFontFamily = computedStyle.getPropertyValue('font-family');    
+    
     // Check if selectedText is empty - If yes, this means user chose nothing
     if(selectedText) {
         /* Define range using user-chosen selection
@@ -430,14 +550,17 @@ function checkAndApplySelectionBold() {
             const parentElement = selectedText.anchorNode.parentElement;
             parentElement.replaceWith(document.createTextNode(parentElement.textContent));
         } else {
-            // Defining html element that is to be used when wrapping a text
+            // Defining html element that is to be used when wrapping a text            
             let span = document.createElement('span');
             span.setAttribute('class', 'bolded');
             span.textContent = window.getSelection().toString();
-
+            
             // Surround chosen text with created html element
-            range.surroundContents(span);   
-        }
+            range.surroundContents(span);
+
+            // Set the span's font-family depending on text container's font-family
+            span.style.fontFamily = capturedFontFamily;
+        }                
     }
 
     // Focus on container
@@ -449,11 +572,18 @@ function checkAndApplySelectionItalic() {
     const selectedText = window.getSelection();
     const isStyled = selectedText.anchorNode.parentElement.classList.contains('italic');
 
+    /* Fetch the current Font Family
+    / Get the computed style */
+    const computedStyle = window.getComputedStyle(textContainer);
+
+    // Get the font family
+    const capturedFontFamily = computedStyle.getPropertyValue('font-family');
+
     // Check if selectedText is empty - If yes, this means user chose nothing
     if(selectedText) {
         /* Define range using user-chosen selection
          Using this range we can wrap html around appropriate piece of text */
-        let range = selectedText.getRangeAt(0);        
+        let range = selectedText.getRangeAt(0);
 
         if(isStyled) {
             // Since Range.startContainer and Range.endContainer both refer to the same 
@@ -467,7 +597,10 @@ function checkAndApplySelectionItalic() {
             span.textContent = window.getSelection().toString();
 
             // Surround chosen text with created html element
-            range.surroundContents(span);   
+            range.surroundContents(span);
+
+            // Set the span's font-family depending on text container's font-family
+            span.style.fontFamily = capturedFontFamily;
         }
     }
 
@@ -479,6 +612,13 @@ function checkAndApplySelectionUnderline() {
     // Fetch the text user selected
     const selectedText = window.getSelection();
     const isStyled = selectedText.anchorNode.parentElement.classList.contains('underlined');
+
+    /* Fetch the current Font Family
+    / Get the computed style */
+    const computedStyle = window.getComputedStyle(textContainer);
+
+    // Get the font family
+    const capturedFontFamily = computedStyle.getPropertyValue('font-family');
 
     // Check if selectedText is empty - If yes, this means user chose nothing
     if(selectedText) {
@@ -498,7 +638,10 @@ function checkAndApplySelectionUnderline() {
             span.textContent = window.getSelection().toString();
 
             // Surround chosen text with created html element
-            range.surroundContents(span);   
+            range.surroundContents(span);
+            
+            // Set the span's font-family depending on text container's font-family
+            span.style.fontFamily = capturedFontFamily;
         }
     }
 
@@ -510,6 +653,13 @@ function checkAndApplySelectionCapitalize() {
     // Fetch the text user selected
     const selectedText = window.getSelection();
     const isStyled = selectedText.anchorNode.parentElement.classList.contains('word-capitalize');
+
+    /* Fetch the current Font Family
+    / Get the computed style */
+    const computedStyle = window.getComputedStyle(textContainer);
+
+    // Get the font family
+    const capturedFontFamily = computedStyle.getPropertyValue('font-family');
 
     // Check if selectedText is empty - If yes, this means user chose nothing
     if(selectedText) {
@@ -530,12 +680,16 @@ function checkAndApplySelectionCapitalize() {
 
             // Surround chosen text with created html element
             range.surroundContents(span);   
+
+            // Set the span's font-family depending on text container's font-family
+            span.style.fontFamily = capturedFontFamily;
         }
     }
 
     // Focus on container
     textContainer.focus();
 }
+
 
 // Redirect functions for html cards
 function redirect(id) {
@@ -555,6 +709,61 @@ function redirect(id) {
 
 function redirectToVimer() {
     window.open("https://github.com/faticamer/vimer-texteditor", "_blank");
+}
+
+function dropHandler(ev) {
+    console.log("File(s) dropped");
+
+    // Prevent default behavior (Prevent file from being opened)
+    ev.preventDefault();
+
+    if (ev.dataTransfer.items) {
+        // Use DataTransferItemList interface to access the file(s)
+        [...ev.dataTransfer.items].forEach((item, i) => {
+        // If dropped items aren't files, reject them
+        if (item.kind === "file") {
+            const file = item.getAsFile();
+            // console.log(`… file[${i}].name = ${file.name}`);
+
+            const reader = new FileReader();
+            reader.onload = function (event) {
+                const fileContent = event.target.result;
+
+                // Insert the file content in notepad area
+                textContainer.innerHTML += fileContent;
+            };
+
+            // Read the file as text
+            reader.readAsText(file);
+        }
+        });
+    } else {
+        // Use DataTransfer interface to access the file(s)
+        [...ev.dataTransfer.files].forEach((file, i) => {
+        console.log(`… file[${i}].name = ${file.name}`);
+        });
+    }
+}
+  
+function dragOverHandler(ev) {
+    // console.log("File(s) in drop zone");
+
+    // Prevent default behavior (Prevent file from being opened)
+    ev.preventDefault();
+}
+
+function hasListElements(selection) {
+    const range = selection.getRangeAt(0); // Assuming it's the first range
+
+    // Iterate through nodes in the range
+    const walker = document.createTreeWalker(range.commonAncestorContainer, NodeFilter.SHOW_ELEMENT);
+    while (walker.nextNode()) {
+        if (walker.currentNode.tagName.toLowerCase() === 'li') {
+            return true; // Found an <li> element
+        }
+    }
+
+    return false; // No <li> elements found in the selection
 }
 
 toggleLightMode();

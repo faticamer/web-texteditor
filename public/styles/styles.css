@@ -1,5 +1,40 @@
+/**
+ * CONTENTS
+ *
+ * SETTINGS
+ * Global...............Globally-available variables and config.
+ * @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200;300&display=swap');
+ * imported Font Family from Google's API
+ *
+ * GENERIC
+ * Normalize.css........A level playing field.
+ * Box-sizing...........Better default `box-sizing`.
+ *
+ * BASE
+ * Headings.............H1–H6 styles.
+ *
+ * OBJECTS
+ * Wrappers.............Wrapping and constraining elements.
+ * Pseudoclasses........Events for wrapper elements
+ *
+ * COMPONENTS
+ * Page-head............The main page header.
+ * Page-foot............The main page footer.
+ * Buttons..............Button elements.
+ *
+ * JAVASCRIPT
+ * Dynamic classes......Classes added/modified through JS
+ *
+ * ANIMATED CARDS
+ * Card components......Animating and styling GitHub cards
+ *
+ */
+
+/*------------------------------------*\
+  #SETTINGS
+\*------------------------------------*/
+
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200;300&display=swap');
-/*Commit test*/
 
 * {
     padding: 0;
@@ -7,6 +42,11 @@
     font-family: 'Poppins', sans-serif;
     box-sizing: border-box;            
 }
+
+
+/*------------------------------------*\
+  #GENERIC
+\*------------------------------------*/
 
 html {
     scroll-snap-type: y mandatory;
@@ -21,47 +61,18 @@ body {
     transition: .3s ease;
 }
 
-.active {
-    background-color: #FFFFFF;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25' viewBox='0 0 1600 800'%3E%3Cg %3E%3Cpolygon fill='%23ecdcd2' points='1600 160 0 460 0 350 1600 50'/%3E%3Cpolygon fill='%23d9baa5' points='1600 260 0 560 0 450 1600 150'/%3E%3Cpolygon fill='%23c59779' points='1600 360 0 660 0 550 1600 250'/%3E%3Cpolygon fill='%23b2754c' points='1600 460 0 760 0 650 1600 350'/%3E%3Cpolygon fill='%239F521F' points='1600 800 0 800 0 750 1600 450'/%3E%3C/g%3E%3C/svg%3E");
-    background-attachment: fixed;
-    background-size: cover;
+/*------------------------------------*\
+  #BASE
+\*------------------------------------*/
+
+.section-two-content h1 {
+    color: #c0c0c0;
+    text-transform: capitalize;
+    padding-left: 10px;
 }
 
-.no-transition {
-    transition: none !important; /* Disable CSS transitions */
-    animation: none !important; /* Disable CSS animations */
-    transform: none !important;
-  }
-
-section {
-    height: 100vh;
-    scroll-snap-align: start;    
-}
-
-svg {
-    fill: #c0c0c0;
-}
-
-.nav-header {    
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin: auto -16px;
-    padding: 8px 32px;    
-    background-color: #000000;
-    z-index: 100;     
-}
-
-.nav-header-light {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin: auto -16px;
-    padding: 8px 32px;    
-    background-color: #42413f;    
-    z-index: 100;     
-}
+.card-h1-container h1:hover { color: #AA0000; }
+.nav-header h2:hover        { color: #AA0000; }
 
 .nav-header h2 {
     cursor: pointer;
@@ -69,9 +80,33 @@ svg {
     transition: all 0.3s ease 0s; 
 }
 
-.nav-header h2:hover {        
-    color: #AA0000;
+.section-two-content h2 {
+    color:#AA0000;
+    padding-left: 10px;
 }
+
+.card-header h2 {
+    font-size: 20px;
+    margin: .25rem 0 auto;
+    text-decoration: none;
+    color: #c0c0c0;
+    border: 0;
+    display: inline-block;
+    cursor: pointer;    
+}
+
+.card-header h2:hover {
+    background: linear-gradient(90deg,#ff8a00,#e52e71);
+    text-shadow: none;
+    -webkit-text-fill-color: transparent;
+    -webkit-background-clip: text;
+    background-clip: text;
+}
+
+
+/*------------------------------------*\
+  #OBJECTS
+\*------------------------------------*/
 
 .main-container {
     display: flex;
@@ -80,190 +115,22 @@ svg {
     height: 90vh;    
 }
 
-
 .notepad-container {     
     width: 70%;
     height: 70%;
-    margin-bottom: 60px;    
+    margin-bottom: 60px;
 }
 
-/* Styling the logo */
-.logo {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+section {
+    height: 100vh;
+    scroll-snap-align: start;    
 }
 
-.logo img{
-    height: 50px;
-    width: 50px;
-    margin-right: 20px;    
-}
+svg { fill: #c0c0c0; }
 
-/*
-    <- Navigation pane modifications listed below ->
+/**
+* Defining the tooltip container for the first section button 
 */
-.nav-links {
-    list-style: none;  
-    display: flex;
-    justify-content: center;
-    flex-direction: row;  
-}
-
-.nav-links li{
-    /*display: inline-block;*/
-    padding: 10px 25px;
-}
-
-.nav-links li a {
-    text-decoration: none;
-    font-weight: bold;
-    transition: all 0.3s ease 0s;
-    color:#c0c0c0;
-}
-
-.nav-links li button {    
-    text-decoration: none;
-    border: none;    
-}
-
-.nav-links li a:hover {    
-    transition: all 0.3s ease 0s;
-    color: #AA0000;
-}
-
-/* Tracking Night/Light mode Changes*/
-.nightmode-button {
-    background-color: black;
-    margin-top: 3px;
-    width: 17px;
-    height: 17px;    
-}
-
-.nightmode-button-svg {
-    margin-top: 3px;
-    width: 17px;
-    height: 17px;
-    transition: all 0.3s ease 0s;
-}
-
-.lightmode-button-svg {
-    margin-top: 3px;
-    width: 17px;
-    height: 17px;
-    transition: all .3s ease 0s;
-}
-
-.lightmode-button {
-    background-color: #42413f;    
-}
-
-.nightmode-button-svg:hover {
-    fill: #AA0000;
-    cursor: pointer;
-}
-
-.lightmode-button-svg:hover {
-    fill: bisque;
-    cursor: pointer;
-}
-
-.disable {
-    display: none;
-}
-
-/*
-    <- Textarea pane modifications listed below ->
-*/
-.textarea-section {
-    margin: 0px;
-    padding: 0;
-}
-
-.notepad-area {    
-    color: azure;
-    margin: 0;
-    padding: 0;
-    background-color: #1A1A1A;
-    width: 100%;
-    height: 100%;
-    resize: none;
-    border: 1px none;
-    border-radius: 0 0 15px 15px;
-    transition: outline-color 0.3s, box-shadow 0.3s, background-color 0.3s, border-color 0.3s;
-}
-
-.dark-mode {
-    background-color: #1A1A1A;
-    width: 100%;
-    height: 100%;
-    resize: none;
-    border: 1px none;
-    border-radius: 0 0 15px 15px;
-    transition: outline-color 0.3s, box-shadow 0.3s, background-color 0.3s, border-color 0.3s;
-}
-
-.light-mode {    
-    background-color: #c9a17e;
-    width: 100%;
-    height: 100%;
-    resize: none;    
-    border-radius: 0 0 15px 15px;
-    box-shadow: 5px 5px 12px #333;
-    transition: outline-color 0.3s, box-shadow 0.3s, background-color 0.3s, border-color 0.3s;
-}
-
-.notepad-area:focus {
-    outline: none;
-    background-color: #333333;
-    color: azure;
-}
-
-.notepad-area.light-mode:focus {
-    background-color:#d7ad88;
-    color: azure;
-}
-
-/*
-    <- Button pane modifications listed below ->
-*/
-
-.button-row {
-    display: flex;  
-    width: 100%;  
-}
-
-.button-dark-mode {
-    flex-grow: 1;
-    padding: 20px 20px;   
-    text-align: center;
-    background-color: #42413f;
-    transition: all 0.3s ease 0s;    
-    border: none;   
-}
-
-.button-light-mode {
-    background-color: #a8a4a2;
-    flex-grow: 1;
-    padding: 20px 20px;   
-    text-align: center;    
-    transition: all 0.3s ease 0s;
-    border: none;
-}
-
-/* Extracting the first and the last button in the button row */
-.first-button-in-sequence {
-    border-radius: 15px 0px 0px 0px;
-    position: relative;      
-}
-
-.last-button-in-sequence {
-    border-radius: 0px 15px 0px 0px;
-    position: relative;
-}
-/* Extracting the first and the last button in the button row */
-
-/* Defining the tooltip container for the first section button */
 .tooltip-container-button {
     position: absolute;
     top: -30px;
@@ -274,10 +141,12 @@ svg {
     width: 50vh;
     border-radius: 10px 10px 0px 0px;
     opacity: 0;
-    transition: opacity 0.5s; /* Set the transition property */   
+    transition: opacity 0.5s;
 }
 
-/* Defining the tooltip container for the last button */
+/** 
+* Defining the tooltip container for the last button 
+*/
 .tooltip-container-button-last {      
     position: absolute;
     top: -30px;
@@ -289,70 +158,6 @@ svg {
     border-radius: 10px 10px 0px 0px;
     opacity: 0;
     transition: opacity 0.5s; /* Set the transition property */
-}
-
-.first-button-in-sequence:hover .tooltip-container-button {
-    display: block;    
-    border-radius: 10px 10px 0px 0px;
-    opacity: 1;
-    transition-delay: 1s;
-}
-
-.first-button-in-sequence:hover {
-    border-radius: 0px;
-}
-/* END of Defining the tooltip container for the first button */
-
-.last-button-in-sequence:hover .tooltip-container-button-last {
-    display: block;
-    border-radius: 10px 10px 0px 0px;
-    opacity: 1;
-    transition-delay: 1s;  
-}
-
-.last-button-in-sequence:hover {
-    border-radius: 0px;
-}
-
-/* Defining the properties for the rest of the buttons */
-.button-row button:nth-child(n+2):nth-child(-n+16) {
-    position: relative;   
-}
-
-.button-row button:nth-child(n+2):nth-child(-n+16):hover .tooltip-container-button {
-    display: block;
-    border-radius: 10px 10px 0px 0px; 
-    opacity: 1;
-    transition-delay: 1s;
-}
-
-.button-row button:nth-child(n+2):nth-child(-n+16):hover .tooltip-container-button-last {
-    display: block;
-    border-radius: 10px 10px 0px 0px;
-    opacity: 1;
-    transition-delay: 1s;
-}
-
-.button-dark-mode:hover {
-    transition: all 0.3s ease 0s;
-    background-color: #AA0000;
-    cursor: pointer;
-}
-
-.button-dark-mode.button-light-mode:hover {
-    transition: all 0.3s ease 0s;
-    background-color: #7b634e;
-    cursor: pointer;
-}
-
-/* <<<< SECTION-TWO STYLES >>>>*/
-.section-two {
-    position: relative;
-    display: flex;
-    width: 100%;
-    height: 100vh;
-    align-items: center;
-    justify-content: center;
 }
 
 .main-container-2 {
@@ -391,10 +196,50 @@ svg {
     left: 95%;
 }
 
-/*
-    << Code located below is targetting the whole section-two
-    content along with the image >>
-*/
+.card-h1-container {
+    width: 90%;
+    display: flex;
+    justify-content: center;    
+}
+
+.card-container {
+    width: 90%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+    height: 100vh;
+}
+
+.textarea-section {
+    margin: 0px;
+    padding: 0;
+}
+
+.notepad-area {    
+    color: azure;
+    margin: 0;
+    padding: 0;
+    background-color: #1A1A1A;
+    width: 100%;
+    height: 100%;
+    resize: none;
+    border: 1px none;
+    border-radius: 0px;
+    overflow: auto;
+    white-space: nowrap;
+    transition: outline-color 0.3s, box-shadow 0.3s, background-color 0.3s, border-color 0.3s;
+}
+
+.section-two {
+    position: relative;
+    display: flex;
+    width: 100%;
+    height: 100vh;
+    align-items: center;
+    justify-content: center;
+}
+
 .section-two-content {
     width: 550px;    
     background-color: #1A1A1A;
@@ -412,21 +257,6 @@ svg {
     box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5); 
 }
 
-.section-two-content h1 {
-    color: #c0c0c0;
-    text-transform: capitalize;
-    padding-left: 10px;
-}
-
-.section-two-content h2 {
-    color:#AA0000;
-    padding-left: 10px;
-}
-
-.span-h2 {
-    color: #c0c0c0;
-}
-
 .section-two-paragraph {
     color: #c0c0c0;
     font-size: 16px;
@@ -435,11 +265,291 @@ svg {
     text-align: justify;
     padding: 10px;
     background-color: #1A1A1A;
-    border-radius: 30px;
+    border-radius: 30px;    
 }
 
-.section-two-paragraph-light {
+.section-two-paragraph-light { background-color: #7b634e; }
+
+.section-three {
+    position: relative;
+    display: flex;    
+    justify-content: center;
+    flex-direction: column;
+    height: 100vh;
+    align-items: center;
+    padding: 3rem;
+}
+
+.notepad-area:focus {
+    outline: none;
+    background-color: #333333;
+    color: azure;
+}
+
+.notepad-area.light-mode:focus {
+    background-color:#d7ad88;
+    color: azure;
+}
+
+.span-h2 { color: #c0c0c0; }
+span     { color:#AA0000;  }
+
+/*------------------------------------*\
+  #COMPONENTS
+\*------------------------------------*/
+
+/**
+* Tracking header
+*/
+.nav-header {    
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: auto -16px;
+    padding: 8px 32px;    
+    background-color: #000000;
+    z-index: 100;     
+}
+
+.nav-header-light {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: auto -16px;
+    padding: 8px 32px;    
+    background-color: #42413f;    
+    z-index: 100;     
+}
+
+/**
+* Styling the logo 
+*/
+.logo {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.logo img{
+    height: 50px;
+    width: 50px;
+    margin-right: 20px;    
+}
+
+/**
+* Navigation pane modifications listed below
+*/
+.nav-links {
+    list-style: none;  
+    display: flex;
+    justify-content: center;
+    flex-direction: row;  
+}
+
+.nav-links li { padding: 10px 25px; }
+
+.nav-links li a {
+    text-decoration: none;
+    font-weight: bold;
+    transition: all 0.3s ease 0s;
+    color:#c0c0c0;
+}
+
+.nav-links li button {    
+    text-decoration: none;
+    border: none;    
+}
+
+.nav-links li a:hover {    
+    transition: all 0.3s ease 0s;
+    color: #AA0000;
+}
+
+.disable { display: none; }
+
+/**
+* Tracking footer
+*/
+.footer-container {
+    display: flex;    
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 90%;
+}
+
+.footer-3 {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.social-icons-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;    
+}
+
+.social-icons-container li{
+    list-style: none;
+    padding: 10px 20px;
+}
+
+.social-svg {
+    width: 30px;
+    height: 30px;
+    transition: .2s ease;
+}
+
+.social-svg:hover {
+    fill: #333;
+}
+
+/**
+* BUTTONS
+*/
+.go-up-button {        
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 2px solid #c0c0c0;
+    background: none;
+    cursor: pointer;
+    transition: .2s ease;    
+}
+
+.go-up-button:hover {
+    background-color: #333;
+    border: none;
+}
+
+/** 
+* Tracking Night/Light mode Changes
+*/
+.nightmode-button {
+    background-color: black;
+    margin-top: 3px;
+    width: 17px;
+    height: 17px;    
+}
+
+.nightmode-button-svg {
+    margin-top: 3px;
+    width: 17px;
+    height: 17px;
+    transition: all 0.3s ease 0s;
+}
+
+.lightmode-button-svg {
+    margin-top: 3px;
+    width: 17px;
+    height: 17px;
+    transition: all .3s ease 0s;
+}
+
+.lightmode-button { background-color: #42413f; }
+
+.nightmode-button-svg:hover {
+    fill: #AA0000;
+    cursor: pointer;
+}
+
+.lightmode-button-svg:hover {
+    fill: bisque;
+    cursor: pointer;
+}
+
+.button-row {
+    display: flex;  
+    width: 100%;  
+}
+
+.button-dark-mode {
+    flex-grow: 1;
+    padding: 20px 20px;   
+    text-align: center;
+    background-color: #42413f;
+    transition: all 0.3s ease 0s;    
+    border: none;   
+}
+
+.button-light-mode {
+    background-color: #656460;
+    flex-grow: 1;
+    padding: 20px 20px;   
+    text-align: center;    
+    transition: all 0.3s ease 0s;
+    border: none;
+}
+
+/**
+* Extracting the first and the last button in the button row 
+*/
+.first-button-in-sequence {
+    border-radius: 15px 0px 0px 0px;
+    position: relative;      
+}
+
+.last-button-in-sequence {
+    border-radius: 0px 15px 0px 0px;
+    position: relative;
+}
+/**
+* Extracting the first and the last button in the button row 
+*/
+
+.first-button-in-sequence:hover .tooltip-container-button {
+    display: block;    
+    border-radius: 10px 10px 0px 0px;
+    opacity: 1;
+    transition-delay: 1s;
+}
+
+.first-button-in-sequence:hover {
+    border-radius: 0px;
+}
+
+.last-button-in-sequence:hover .tooltip-container-button-last {
+    display: block;
+    border-radius: 10px 10px 0px 0px;
+    opacity: 1;
+    transition-delay: 1s;  
+}
+
+.last-button-in-sequence:hover {
+    border-radius: 0px;
+}
+
+/* Defining the properties for the rest of the buttons */
+.button-row button:nth-child(n+2):nth-child(-n+18) {
+    position: relative;   
+}
+
+.button-row button:nth-child(n+2):nth-child(-n+18):hover .tooltip-container-button {
+    display: block;
+    border-radius: 10px 10px 0px 0px; 
+    opacity: 1;
+    transition-delay: 1s;
+}
+
+.button-row button:nth-child(n+2):nth-child(-n+18):hover .tooltip-container-button-last {
+    display: block;
+    border-radius: 10px 10px 0px 0px;
+    opacity: 1;
+    transition-delay: 1s;
+}
+
+.button-dark-mode:hover {
+    transition: all 0.3s ease 0s;
+    background-color: #AA0000;
+    cursor: pointer;
+}
+
+.button-dark-mode.button-light-mode:hover {
+    transition: all 0.3s ease 0s;
     background-color: #7b634e;
+    cursor: pointer;
 }
 
 .section-two-content button {
@@ -461,6 +571,54 @@ svg {
     background: #333;    
 }
 
+/*------------------------------------*\
+  #JAVASCRIPT
+\*------------------------------------*/
+
+.active {
+    background-color: #FFFFFF;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25' viewBox='0 0 1600 800'%3E%3Cg %3E%3Cpolygon fill='%23ecdcd2' points='1600 160 0 460 0 350 1600 50'/%3E%3Cpolygon fill='%23d9baa5' points='1600 260 0 560 0 450 1600 150'/%3E%3Cpolygon fill='%23c59779' points='1600 360 0 660 0 550 1600 250'/%3E%3Cpolygon fill='%23b2754c' points='1600 460 0 760 0 650 1600 350'/%3E%3Cpolygon fill='%239F521F' points='1600 800 0 800 0 750 1600 450'/%3E%3C/g%3E%3C/svg%3E");
+    background-attachment: fixed;
+    background-size: cover;
+}
+
+.no-transition {
+    transition: none !important; /* Disable CSS transitions */
+    animation: none !important; /* Disable CSS animations */
+    transform: none !important;
+  }
+
+
+.character-count {
+    display: flex;
+    justify-content: end;
+    color: #c0c0c0;
+    background-color: #42413f;
+    border: 1px none;
+    border-radius: 0 0 15px 15px;
+}
+
+.character-count p              { padding: 0 10px;}
+
+.character-count p:nth-child(1) { border-right: 1px solid #c0c0c0; }
+
+.character-count p:nth-child(2) { border-right: 1px solid #c0c0c0; }
+
+.dark-mode {
+    background-color: #1A1A1A;         
+    transition: outline-color 0.3s, box-shadow 0.3s, background-color 0.3s, border-color 0.3s;
+}
+
+.light-mode {    
+    background-color: #c9a17e;
+    width: 100%;
+    height: 100%;
+    resize: none;    
+    border-radius: 0px;
+    box-shadow: 10px 0 10px rgba(0, 0, 0, 0.5);    
+    transition: outline-color 0.3s, box-shadow 0.3s, background-color 0.3s, border-color 0.3s;
+}
+
 .git-button-text {
     margin-right: 8px;
     color: #c0c0c0;  
@@ -471,23 +629,48 @@ svg {
     height: 25px;
 }
 
-span {
-    color:#AA0000;
+
+/* Dynamically accessed classes */
+.bolded {
+    
+    font-weight: bold;
+    color: azure;
 }
 
-/*
-    <<<< SECTION-THREE STYLES >>>>
-*/
-
-.section-three {
-    position: relative;
-    display: flex;    
-    justify-content: center;
-    flex-direction: column;
-    height: 100vh;
-    align-items: center;
-    padding: 3rem;
+.italic {
+    font-style: italic;
+    color: azure;
 }
+
+.underlined {
+    text-decoration: underline;
+    color: azure;
+}
+
+.highlighted {
+    text-decoration: underline;
+    color: cadetblue;
+    cursor: pointer;
+}
+
+.word-capitalize {
+    text-transform: uppercase;
+    color: azure;
+}
+
+.custom-unordered-list {
+    margin-left: 25px;
+}
+
+.custom-ordered-list {
+    margin-left: 25px;
+    list-style: decimal;
+}
+
+
+/*------------------------------------*\
+  #ANIMATED CARDS
+\*------------------------------------*/
 
 .card-h1-container {
     width: 90%;
@@ -507,10 +690,6 @@ span {
     color: #7b634e;
 }
 
-.card-h1-container h1:hover {
-    color: #AA0000;
-}
-
 .card-container {
     width: 90%;
     display: flex;
@@ -519,8 +698,6 @@ span {
     padding: 2rem;
     height: 100vh;
 }
-
-/* Target articles */
 
 .card-list {
     display: flex;
@@ -545,49 +722,16 @@ span {
     position: relative;
 }
 
-.card-light {
-    background: #7b634e;
-}
-
-.card:focus-within~.card, .card:hover~.card {
-    transform: translateX(130px);
-}
-
-.card:hover {
-    transform: translateY(-1rem);
-}
-
-.card:not(:first-child) {
-    margin-left: -130px;
-}
-
-
-.card-header {
-    margin-bottom: auto;
-}
+.card-light                                 { background: #7b634e;        }
+.card:focus-within~.card, .card:hover~.card { transform: translateX(130px); }
+.card:hover                                 { transform: translateY(-1rem); }
+.card:not(:first-child)                     { margin-left: -130px;          }
+.card-header                                { margin-bottom: auto;          }
 
 .card-header p {
     font-size: 14px;
     margin: 0 0 1rem;
     color: #ff8a00;
-}
-
-.card-header h2 {
-    font-size: 20px;
-    margin: .25rem 0 auto;
-    text-decoration: none;
-    color: #c0c0c0;
-    border: 0;
-    display: inline-block;
-    cursor: pointer;    
-}
-
-.card-header h2:hover {
-    background: linear-gradient(90deg,#ff8a00,#e52e71);
-    text-shadow: none;
-    -webkit-text-fill-color: transparent;
-    -webkit-background-clip: text;
-    background-clip: text;
 }
 
 .card-author {
@@ -646,94 +790,4 @@ span {
     stroke-width: 8;
     stroke-linecap: round;
     pointer-events: none;
-}
-
-/* Target footer container*/
-.footer-container {
-    display: flex;    
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    width: 90%;
-}
-
-.footer-3 {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-}
-
-.social-icons-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;    
-}
-
-.social-icons-container li{
-    list-style: none;
-    padding: 10px 20px;
-}
-
-.social-svg {
-    width: 30px;
-    height: 30px;
-    transition: .2s ease;
-}
-
-.social-svg:hover {
-    fill: #333;
-}
-
-/* JAVASCRIPT TOGGLED CLASSES*/
-/* Button go up to Home page */
-.go-up-button {        
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    border: 2px solid #c0c0c0;
-    background: none;
-    cursor: pointer;
-    transition: .2s ease;    
-}
-
-.go-up-button:hover {
-    background-color: #333;
-    border: none;
-}
-
-/* Dynamically accessed classes */
-.bolded {
-    font-weight: bold;
-    color: azure;
-}
-
-.italic {
-    font-style: italic;
-    color: azure;
-}
-
-.underlined {
-    text-decoration: underline;
-    color: azure;
-}
-
-.highlighted {
-    text-decoration: underline;
-    color: cadetblue;
-    cursor: pointer;
-}
-
-.word-capitalize {
-    text-transform: uppercase;
-    color: azure;
-}
-
-.custom-unordered-list {
-    margin-left: 25px;
-}
-
-.custom-ordered-list {
-    margin-left: 25px;
-    list-style: decimal;
 }
