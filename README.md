@@ -7,6 +7,10 @@
 
 Minimal web application that provides some basic text-editing functionalities. Implemented fully in plain HTML, CSS and JavaScript. No 3rd party plugins, libraries, packages.
 
+## Check it out!
+
+Click [here](https://faticamer.github.io/vimer-texteditor/) to see it live in action.
+
 ## Functionalities
 
 - Import .txt file
@@ -32,7 +36,7 @@ Minimal web application that provides some basic text-editing functionalities. I
 
 REMINDER: This functionality gets rid of every modification that's been done to a text. 
 
-## How to save changes
+## Saving changes
 
 Since this program does not use any packages, it is not possible to export to .docx to see changes outside the program. Consider checking [this](https://github.com/mokeyish/obsidian-enhancing-export) repository for implementing such feature. Make sure to clone this repository first. Reason for not having this functionality is intentional omit of JS packages and libraries.
 
