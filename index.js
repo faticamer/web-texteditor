@@ -2,6 +2,7 @@ const textContainer = document.querySelector(".notepad-area");
 const tools = document.querySelector(".button-dark-mode");
 const fileButton = document.getElementById("file-button");
 const fileInput = document.getElementById("file-input");
+const clearButton = document.querySelector(".clear-btn");
 let scrollingTimer;
 
 /*Commit test*/
@@ -52,6 +53,35 @@ textContainer.addEventListener("input", function () {
     charField.textContent = `Char count: ${characterCount}`;
 });
 
+
+clearButton.addEventListener("mouseover", function() {
+    const svg = document.querySelector(".clear-btn svg");
+
+    if(clearButton.classList.contains("clear-btn-light")) {        
+        clearButton.classList.add("clear-btn-hover-light");
+        svg.classList.add("clear-btn-svg-light");
+    } else {        
+        clearButton.classList.add("clear-btn-hover");
+        svg.classList.add("clear-btn-svg");
+    }
+});
+
+clearButton.addEventListener("mouseout", function() {
+    const svg = document.querySelector(".clear-btn svg");
+
+    if(clearButton.classList.contains("clear-btn-light")) {        
+        clearButton.classList.remove("clear-btn-hover-light");
+        svg.classList.remove("clear-btn-svg-light");
+    } else {        
+        clearButton.classList.remove("clear-btn-hover");
+        svg.classList.remove("clear-btn-svg");
+    }
+})
+
+clearButton.addEventListener("click", function() {
+    textContainer.textContent = "";
+})
+
 // Function that handles light/night mode mode
 function toggleLightMode () {
     let isNightMode = false;
@@ -67,11 +97,15 @@ function toggleLightMode () {
     const toggleLightButton = document.querySelector(".nightmode-button");    
     const buttons = document.querySelectorAll(".button-row button");
     const navHeader = document.querySelector(".nav-header");
+    const navh2 = document.querySelector(".nav-h2");
+    const time = document.querySelector(".time");
+    const navLinks = document.querySelectorAll(".nav-links-a");
     const logo = document.querySelector(".logo img");
     const cards = document.querySelectorAll(".card");
     const cardHeader = document.querySelector(".card-h1");
     const sectionTwoContent = document.querySelector(".section-two-content");
     const sectionTwoParagraph = document.querySelector(".section-two-paragraph");
+    const characterCount = document.querySelector(".character-count");
     const body = document.body;
 
     toggleLightButton.addEventListener("click", () => {
@@ -89,16 +123,23 @@ function toggleLightMode () {
         body.classList.toggle("active");
         textContainer.classList.toggle("light-mode");
         navHeader.classList.toggle("nav-header-light");
+        navh2.classList.toggle("nav-h2-light");
+        time.classList.toggle("time-light");
         toggleLightButton.classList.toggle("lightmode-button");  
         cardHeader.classList.toggle("card-h1-light");
         sectionTwoContent.classList.toggle("section-two-content-light");
         sectionTwoParagraph.classList.toggle("section-two-paragraph-light");
+        characterCount.classList.toggle("character-count-light");
+        clearButton.classList.toggle("clear-btn-light")
         cards.forEach(card => {
             card.classList.toggle("card-light");
         })   
         buttons.forEach(button => {
             button.classList.toggle("button-light-mode");
         });
+        navLinks.forEach(navLink => {
+            navLink.classList.toggle("nav-links-a-light");
+        })
     });
 };
 
@@ -480,6 +521,8 @@ function purifyContent() {
 
     // Replace child node's content (span) with the plain text to remove predefined styling
     textContainer.textContent = childSpan.textContent;
+
+    textContainer.focus();
 }
 
 function exportAsTxt () {
@@ -525,42 +568,109 @@ function exportAsTxt () {
     textContainer.focus();
 }
 
-// Separate into three functions :)) Refer to the one on PC
 function checkAndApplySelectionBold() {
     // Fetch the text user selected
-    const selectedText = window.getSelection();
+    const selectedText = window.getSelection();    
     const isStyled = selectedText.anchorNode.parentElement.classList.contains('bolded');
+    const isItalic = selectedText.anchorNode.parentElement.classList.contains('italic');
+    const isUnderline = selectedText.anchorNode.parentElement.classList.contains('underlined');
+    const isCapitalized = selectedText.anchorNode.parentElement.classList.contains('word-capitalize');
 
     /* Fetch the current Font Family
     / Get the computed style */
     const computedStyle = window.getComputedStyle(textContainer);
 
     // Get the font family
-    const capturedFontFamily = computedStyle.getPropertyValue('font-family');    
-    
+    const capturedFontFamily = computedStyle.getPropertyValue('font-family');
+
+    // If user did not choose anything, alert.    
+    if(selectedText.isCollapsed) {
+        alert("Please select a piece of text first.");
+        return;
+    }
+
     // Check if selectedText is empty - If yes, this means user chose nothing
     if(selectedText) {
         /* Define range using user-chosen selection
          Using this range we can wrap html around appropriate piece of text */
-        let range = selectedText.getRangeAt(0);        
+        let range = selectedText.getRangeAt(0);
 
-        if(isStyled) {
+        if(isStyled) { // if it does have bold class applied && does contain text nodes
             // Since Range.startContainer and Range.endContainer both refer to the same 
-            // node, range.commonAncestorContainer is that node
+            // node, range.commonAncestorContainer is that node            
+        
             const parentElement = selectedText.anchorNode.parentElement;
-            parentElement.replaceWith(document.createTextNode(parentElement.textContent));
-        } else {
-            // Defining html element that is to be used when wrapping a text            
-            let span = document.createElement('span');
-            span.setAttribute('class', 'bolded');
-            span.textContent = window.getSelection().toString();
-            
-            // Surround chosen text with created html element
-            range.surroundContents(span);
+            const classList = parentElement.classList;
+            const classArray = Array.from(classList);
 
-            // Set the span's font-family depending on text container's font-family
-            span.style.fontFamily = capturedFontFamily;
-        }                
+            // Since the classArray above will pick up the bolded class as well, we need to remove it,
+            // because our original intention was to remove that class but keep others
+            const filteredClasses = classArray.filter(className => className !== "bolded");
+
+            // Join filtered classes into a string
+            const filteredClassesString = filteredClasses.join(' ');
+
+            // Set the classes
+            parentElement.setAttribute('class', filteredClassesString);
+            
+            // Place the cursor at the end of the selection - deactivate selection
+            placeCursor();
+
+            // Remove the span if no classes are present
+            if(parentElement.classList.length === 0) {
+                // Replace the span with its content
+                parentElement.replaceWith(document.createTextNode(parentElement.textContent));
+            }
+        } else { // if it does not have a bold class applied
+            
+            // Here we need to check if there is either underline/italic/capitalized
+            // We also need to check if user selected word or a phrase (multiple words)
+            if((isItalic || isUnderline || isCapitalized) && selectedText.toString().match(/\s/)) {
+                console.log("This condition with multiple words is satisfied");             
+                
+                // Surround everything with necessary span
+                // Need a way to deactivate this whole block // maybe remove all classes and let the code below remove the span
+                // completely since it gets rid of unused spans
+                // if everything gets deleted, we need a way to take the nested spans from the content before deleting it
+                let boldSpan = document.createElement('span');
+                boldSpan.setAttribute('class', 'bolded');
+                
+                range = selectedText.getRangeAt(0);
+                boldSpan.appendChild(range.extractContents());                
+                range.deleteContents();                
+                range.insertNode(boldSpan);
+
+                // remove class, clearNode will get rid of the span
+                if(isStyled)
+                    boldSpan.classList.remove("bolded");
+
+            } else if(isItalic || isUnderline || isCapitalized) {
+                // Capture the span if there is one
+                const capturedSpan = selectedText.anchorNode.parentElement;
+                capturedSpan.classList.toggle('bolded');
+                
+                // Place the cursor at the end of the selection - deactivate selection
+                placeCursor();
+            } else {                
+                let span = document.createElement('span');
+                span.setAttribute('class', 'bolded');
+                // span.textContent = window.getSelection().toString();
+                span.appendChild(range.extractContents());
+                range.insertNode(span);
+
+                // Surround chosen text with created html element
+                // range.surroundContents(span);
+
+                // Place the cursor at the end of the selection - deactivate selection                
+                placeCursor();
+    
+                // Set the span's font-family depending on text container's font-family
+                span.style.fontFamily = capturedFontFamily;
+            }
+        }
+        
+        // Clear empty spans
+        // clearNode();
     }
 
     // Focus on container
@@ -571,6 +681,9 @@ function checkAndApplySelectionItalic() {
     // Fetch the text user selected
     const selectedText = window.getSelection();
     const isStyled = selectedText.anchorNode.parentElement.classList.contains('italic');
+    const isBold = selectedText.anchorNode.parentElement.classList.contains('bolded');    
+    const isUnderline = selectedText.anchorNode.parentElement.classList.contains('underlined');
+    const isCapitalized = selectedText.anchorNode.parentElement.classList.contains('word-capitalize');
 
     /* Fetch the current Font Family
     / Get the computed style */
@@ -578,6 +691,13 @@ function checkAndApplySelectionItalic() {
 
     // Get the font family
     const capturedFontFamily = computedStyle.getPropertyValue('font-family');
+
+    
+    // If user did not choose anything, alert.    
+    if(selectedText.isCollapsed) {
+        alert("Please select a piece of text first.");
+        return;
+    }
 
     // Check if selectedText is empty - If yes, this means user chose nothing
     if(selectedText) {
@@ -589,20 +709,56 @@ function checkAndApplySelectionItalic() {
             // Since Range.startContainer and Range.endContainer both refer to the same 
             // node, range.commonAncestorContainer is that node
             const parentElement = selectedText.anchorNode.parentElement;
-            parentElement.replaceWith(document.createTextNode(parentElement.textContent));
+            const classList = parentElement.classList;
+            const classArray = Array.from(classList);
+
+            // Since the classArray above will pick up the italic class as well, we need to remove it,
+            // because our original intention was to remove that class but keep others
+            const filteredClasses = classArray.filter(className => className !== "italic");
+
+            // Join filtered classes into a string
+            const filteredClassesString = filteredClasses.join(' ');
+
+            // Set the classes
+            parentElement.setAttribute('class', filteredClassesString);
+
+            // Place the cursor at the end of the selectoin - deactivate selection
+            placeCursor();
+
+            // Remove the span if no classes are present
+            if(parentElement.classList.length === 0) {
+                // Replace the span with its content
+                parentElement.replaceWith(document.createTextNode(parentElement.textContent));
+            }
         } else {
-            // Defining html element that is to be used when wrapping a text
-            let span = document.createElement('span');
-            span.setAttribute('class', 'italic');
-            span.textContent = window.getSelection().toString();
 
-            // Surround chosen text with created html element
-            range.surroundContents(span);
+            if(isBold || isUnderline || isCapitalized) {
+                // Capture the span if there is one
+                const capturedSpan = selectedText.anchorNode.parentElement;
+                capturedSpan.classList.toggle('italic');
 
-            // Set the span's font-family depending on text container's font-family
-            span.style.fontFamily = capturedFontFamily;
+                // Place the cursor at the end of the selectoin - deactivate selection
+                placeCursor();                
+            } else {
+                // Defining html element that is to be used when wrapping a text
+                let span = document.createElement('span');
+                span.setAttribute('class', 'italic');
+                span.textContent = window.getSelection().toString();
+
+                // Surround chosen text with created html element
+                range.surroundContents(span);
+
+                // Place the cursor at the end of the selectoin - deactivate selection
+                placeCursor();
+
+                // Set the span's font-family depending on text container's font-family
+                span.style.fontFamily = capturedFontFamily;
+            }
         }
     }
+
+    // Clear empty spans
+    // clearNode();
 
     // Focus on container
     textContainer.focus();
@@ -612,6 +768,9 @@ function checkAndApplySelectionUnderline() {
     // Fetch the text user selected
     const selectedText = window.getSelection();
     const isStyled = selectedText.anchorNode.parentElement.classList.contains('underlined');
+    const isBold = selectedText.anchorNode.parentElement.classList.contains('bolded');    
+    const isItalic = selectedText.anchorNode.parentElement.classList.contains('italic');
+    const isCapitalized = selectedText.anchorNode.parentElement.classList.contains('word-capitalize');
 
     /* Fetch the current Font Family
     / Get the computed style */
@@ -619,6 +778,12 @@ function checkAndApplySelectionUnderline() {
 
     // Get the font family
     const capturedFontFamily = computedStyle.getPropertyValue('font-family');
+
+    // If user did not choose anything, alert.    
+    if(selectedText.isCollapsed) {
+        alert("Please select a piece of text first.");
+        return;
+    }
 
     // Check if selectedText is empty - If yes, this means user chose nothing
     if(selectedText) {
@@ -630,20 +795,56 @@ function checkAndApplySelectionUnderline() {
             // Since Range.startContainer and Range.endContainer both refer to the same 
             // node, range.commonAncestorContainer is that node
             const parentElement = selectedText.anchorNode.parentElement;
-            parentElement.replaceWith(document.createTextNode(parentElement.textContent));
-        } else {
-            // Defining html element that is to be used when wrapping a text
-            let span = document.createElement('span');
-            span.setAttribute('class', 'underlined');
-            span.textContent = window.getSelection().toString();
+            const classList = parentElement.classList;
+            const classArray = Array.from(classList);
 
-            // Surround chosen text with created html element
-            range.surroundContents(span);
+            // Since the classArray above will pick up the underlined class as well, we need to remove it,
+            // because our original intention was to remove that class but keep others
+            const filteredClasses = classArray.filter(className => className != "underlined");
+
+            // Join filtered classes into a string
+            const filteredClassesString = filteredClasses.join(' ');
+
+            // Set the classes
+            parentElement.setAttribute('class', filteredClassesString);
             
-            // Set the span's font-family depending on text container's font-family
-            span.style.fontFamily = capturedFontFamily;
+            // Place the cursor at the end of the selection - deactivate selection
+            placeCursor();
+
+            // Remove the span if no classes are present
+            if(parentElement.classList.length === 0) {
+                // Replace the span with its content
+                parentElement.replaceWith(document.createTextNode(parentElement.textContent));
+            }
+        } else {
+
+            if(isBold || isItalic || isCapitalized) {
+                // Capture the span if there is one
+                const capturedSpan = selectedText.anchorNode.parentElement;
+                capturedSpan.classList.toggle('underlined');
+
+                // Place the cursor at the end of the selection - deactivate selection
+                placeCursor();
+            } else {            
+                // Defining html element that is to be used when wrapping a text
+                let span = document.createElement('span');
+                span.setAttribute('class', 'underlined');
+                span.textContent = window.getSelection().toString();
+
+                // Surround chosen text with created html element
+                range.surroundContents(span);
+                
+                // Place the cursor at the end of the selection - deactivate selection
+                placeCursor();
+
+                // Set the span's font-family depending on text container's font-family
+                span.style.fontFamily = capturedFontFamily;            
+            }
         }
     }
+
+    // Clear empty spans
+    // clearNode();
 
     // Focus on container
     textContainer.focus();
@@ -653,6 +854,9 @@ function checkAndApplySelectionCapitalize() {
     // Fetch the text user selected
     const selectedText = window.getSelection();
     const isStyled = selectedText.anchorNode.parentElement.classList.contains('word-capitalize');
+    const isBold = selectedText.anchorNode.parentElement.classList.contains("bolded");
+    const isItalic = selectedText.anchorNode.parentElement.classList.contains("italic");
+    const isUnderline = selectedText.anchorNode.parentElement.classList.contains("underlined");
 
     /* Fetch the current Font Family
     / Get the computed style */
@@ -660,6 +864,12 @@ function checkAndApplySelectionCapitalize() {
 
     // Get the font family
     const capturedFontFamily = computedStyle.getPropertyValue('font-family');
+
+    // If user did not choose anything, alert.    
+    if(selectedText.isCollapsed) {
+        alert("Please select a piece of text first.");
+        return;
+    }
 
     // Check if selectedText is empty - If yes, this means user chose nothing
     if(selectedText) {
@@ -671,20 +881,57 @@ function checkAndApplySelectionCapitalize() {
             // Since Range.startContainer and Range.endContainer both refer to the same 
             // node, range.commonAncestorContainer is that node
             const parentElement = selectedText.anchorNode.parentElement;
-            parentElement.replaceWith(document.createTextNode(parentElement.textContent));
+            const classList = parentElement.classList;
+            const classArray = Array.from(classList);
+
+            // Since the classArray above will pick up the bolded class as well, we need to remove it,
+            // because our original intention was to remove that class but keep others
+            const filteredClasses = classArray.filter(className => className !== "word-capitalize");
+
+            // Join filtered classes into a string
+            const filteredClassesString = filteredClasses.join(' ');
+
+            // Set the classes
+            parentElement.setAttribute('class', filteredClassesString);
+
+            // Place the cursor at the end of the selection - Deactivate selection
+            placeCursor();
+
+            // Remove the span if no classes are present
+            if(parentElement.classList.length === 0) {
+                console.log("You are here.");
+                // Replace the span with its content                
+                parentElement.replaceWith(document.createTextNode(parentElement.textContent));
+            }            
         } else {
-            // Defining html element that is to be used when wrapping a text
-            let span = document.createElement('span');
-            span.setAttribute('class', 'word-capitalize');
-            span.textContent = window.getSelection().toString();
 
-            // Surround chosen text with created html element
-            range.surroundContents(span);   
+            if(isItalic || isUnderline || isBold) {
+                // Capture the span if there is one
+                const capturedSpan = selectedText.anchorNode.parentElement;
+                capturedSpan.classList.toggle('word-capitalize');
 
-            // Set the span's font-family depending on text container's font-family
-            span.style.fontFamily = capturedFontFamily;
+                // Place the cursor at the end of the selection - Deactivate selection
+                placeCursor();
+            } else {                
+                // Defining html element that is to be used when wrapping a text
+                let span = document.createElement('span');
+                span.setAttribute('class', 'word-capitalize');
+                span.textContent = window.getSelection().toString();
+
+                // Surround chosen text with created html element
+                range.surroundContents(span);  
+                
+                // Place the cursor at the end of the selection - deactivate selection
+                placeCursor();
+
+                // Set the span's font-family depending on text container's font-family
+                span.style.fontFamily = capturedFontFamily;   
+            }
         }
     }
+
+    // Clear empty spans
+    // clearNode();
 
     // Focus on container
     textContainer.focus();
@@ -744,6 +991,10 @@ function dropHandler(ev) {
         });
     }
 }
+
+function clear() {
+    textContainer.textContent = "";
+}
   
 function dragOverHandler(ev) {
     // console.log("File(s) in drop zone");
@@ -766,6 +1017,94 @@ function hasListElements(selection) {
     return false; // No <li> elements found in the selection
 }
 
+function updateClock() {
+    const clockTitle = document.getElementById("time");
+
+    setInterval(function() {
+        const now = new Date();
+        const hours = now.getHours();
+        const minutes = now.getMinutes();
+        const seconds = now.getSeconds();
+
+        // Determine AM/PM
+        const ampm = hours >= 12 ? "PM" : "AM";
+
+        // Convert to 12/hr clock
+        const formattedHours = hours % 12 || 12;
+
+        // Format : HH/MM/SS
+        const timeString = `${formattedHours}:${(minutes < 10 ? '0' : '') + minutes}:${(seconds < 10 ? '0' : '') + seconds} ${ampm}`;
+
+        // Update the title in HTML
+        clockTitle.textContent = timeString;
+    }, 1000);
+}
+
+function getNextNode(node) {
+    if (node.firstChild)
+        return node.firstChild;
+    while (node)
+    {
+        if (node.nextSibling)
+            return node.nextSibling;
+        node = node.parentNode;
+    }
+}
+
+function getNodesInRange(range) {
+    var start = range.startContainer;
+    var end = range.endContainer;
+    var commonAncestor = range.commonAncestorContainer;
+    var nodes = [];
+    var node;
+
+    // walk parent nodes from start to common ancestor
+    for (node = start.parentNode; node; node = node.parentNode)
+    {
+        nodes.push(node);
+        if (node == commonAncestor)
+            break;
+    }
+    nodes.reverse();
+
+    // walk children and siblings from start until end is found
+    for (node = start; node; node = getNextNode(node))
+    {
+        nodes.push(node);
+        if (node == end)
+            break;
+    }
+
+    return nodes;
+}
+
+
+
+function placeCursor() {
+    const selection = window.getSelection();
+    const range = selection.getRangeAt(0);
+    const endContainer = range.endContainer;
+    const endOffset = range.endOffset;
+
+    // Set the range to the end of the selection
+    range.setStart(endContainer, endOffset);
+    range.setEnd(endContainer, endOffset);
+    
+    // Remove the selection
+    window.getSelection().removeAllRanges();
+
+    // Place the cursor at the end of the selection
+    const cursorRange = document.createRange();
+    cursorRange.setStart(endContainer, endOffset);
+    cursorRange.setEnd(endContainer, endOffset);
+
+    const cursorSelection = window.getSelection();
+    cursorSelection.removeAllRanges();
+    cursorSelection.addRange(cursorRange);
+}
+
+
+updateClock();
 toggleLightMode();
 toggleTooltips();
 scrollToTop();

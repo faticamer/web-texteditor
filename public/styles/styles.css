@@ -72,7 +72,9 @@ body {
 }
 
 .card-h1-container h1:hover { color: #AA0000; }
-.nav-header h2:hover        { color: #AA0000; }
+.nav-h2:hover               { color: #AA0000; }
+.nav-h2-light:hover         { color: #ff8a00; }
+
 
 .nav-header h2 {
     cursor: pointer;
@@ -119,6 +121,10 @@ body {
     width: 70%;
     height: 70%;
     margin-bottom: 60px;
+}
+
+.time-container {
+    margin-left: 20px;
 }
 
 section {
@@ -227,7 +233,7 @@ svg { fill: #c0c0c0; }
     border: 1px none;
     border-radius: 0px;
     overflow: auto;
-    white-space: nowrap;
+    /*white-space: nowrap;*/
     transition: outline-color 0.3s, box-shadow 0.3s, background-color 0.3s, border-color 0.3s;
 }
 
@@ -360,10 +366,25 @@ span     { color:#AA0000;  }
     border: none;    
 }
 
-.nav-links li a:hover {    
+.nav-links-a:hover {
     transition: all 0.3s ease 0s;
     color: #AA0000;
 }
+
+.nav-links-a-light:hover{
+    transition: all 0.3s ease 0s;
+    color: #ff8a00;
+}
+
+.time {
+    color: #c0c0c0;
+    font-family: Poppins;
+    cursor: pointer;
+    transition: .2s ease;
+}
+
+.time:hover       { color:#AA0000; }
+.time-light:hover { color:#ff8a00  }
 
 .disable { display: none; }
 
@@ -591,18 +612,51 @@ span     { color:#AA0000;  }
 
 .character-count {
     display: flex;
-    justify-content: end;
+    justify-content: space-between;
     color: #c0c0c0;
     background-color: #42413f;
     border: 1px none;
     border-radius: 0 0 15px 15px;
 }
 
+.character-count-light          { background-color: #656460; }
+
 .character-count p              { padding: 0 10px;}
 
 .character-count p:nth-child(1) { border-right: 1px solid #c0c0c0; }
 
 .character-count p:nth-child(2) { border-right: 1px solid #c0c0c0; }
+
+.ch-count-paragraphs {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+}
+
+.ch-count-button {
+    margin: 5px 10px;
+    transition: .2s ease;
+}
+
+.clear-btn {
+    color: #c0c0c0;
+    background-color: #42413f;
+    border: none;
+    font-size: 14px;
+    cursor: pointer;    
+}
+
+.clear-btn-light {
+    background-color: #656460;
+}
+
+.clear-btn-hover       { color: #AA0000; }
+
+.clear-btn-svg         { fill: #AA0000;  }
+
+.clear-btn-hover-light { color: #ff8a00; }
+
+.clear-btn-svg-light   { fill: #ff8a00;  }
 
 .dark-mode {
     background-color: #1A1A1A;         
@@ -632,7 +686,6 @@ span     { color:#AA0000;  }
 
 /* Dynamically accessed classes */
 .bolded {
-    
     font-weight: bold;
     color: azure;
 }
