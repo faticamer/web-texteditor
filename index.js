@@ -3,7 +3,7 @@ const tools = document.querySelector(".button-dark-mode");
 const fileButton = document.getElementById("file-button");
 const fileInput = document.getElementById("file-input");
 const clearButton = document.querySelector(".clear-btn");
-let scrollingTimer;
+let timeoutId;
 
 /*Commit test*/
 
@@ -12,7 +12,7 @@ window.addEventListener('scroll', function() {
     const cards = this.document.querySelectorAll(".card");
 
     // Clear previous timers
-    this.clearTimeout(scrollingTimer);
+    this.clearTimeout(timeoutId);
 
     // Apply no-transition class to all cards
     cards.forEach(card => {
@@ -20,7 +20,7 @@ window.addEventListener('scroll', function() {
     })    
 
     // When scrolling stops, remove all no-transition classes
-    scrollingTimer = setTimeout(() => {
+    timeoutId = setTimeout(() => {
         cards.forEach(card => {
             card.classList.remove("no-transition");
         })
@@ -51,8 +51,15 @@ textContainer.addEventListener("input", function () {
 
     // Update the <p> element's content with the character count
     charField.textContent = `Char count: ${characterCount}`;
+    
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(function () {
+        wrapWordsInSpan();  // Wraps each word in its own span, so each word can be modified separately without using messy logic 
+                            // and trying to cover sa many edge cases as possible
+        placeCursorAtEnd(); // Place the cursor at the end of the text after the delay
+        clearEmptySpans();  // If there are any empty spans this function call will handle them.
+    }, 1000);
 });
-
 
 clearButton.addEventListener("mouseover", function() {
     const svg = document.querySelector(".clear-btn svg");
@@ -185,36 +192,23 @@ function scrollToTop () {
     });
 };
 
-function selectFontStyle () {
+function selectFontStyle() {
     const note = "NOTE: Generic Font-family set to sans-serif";
     const query = "\n\nSpecify Font-family, make sure the family exists:";
     const defaultFont = "Poppins, sans-serif";
 
-    // Use spread operator to convert HTMLCollections to an array
-    let spanArray = [
-    ...document.getElementsByClassName("bolded"),
-    ...document.getElementsByClassName("italic"),
-    ...document.getElementsByClassName("underlined"),
-    ...document.getElementsByClassName("word-capitalize"),
-    ...document.getElementsByClassName("highlighted")
-    ];
-
-    // Ask the user for the Font-Family
     const inputFont = prompt(note + query);
-    if(inputFont === null) { // Check if user cancels the prompt
+    if(inputFont === null) {
         textContainer.style.fontFamily = defaultFont;
     } else {
         const finalFont = inputFont + ", sans-serif";
 
         // There will be no checks done for the input
-        textContainer.style.fontFamily = finalFont;    
-        
-        // Apply the font-family to all spans - if any    
-        if(spanArray.length != 0) {        
-            spanArray.forEach((spanItem) => {            
-                spanItem.style.fontFamily = finalFont;                
-            })
-        }
+        textContainer.style.fontFamily = finalFont;
+        const spanElements = textContainer.querySelectorAll('span')
+        spanElements.forEach(spanElement => {
+            spanElement.style.fontFamily = finalFont;
+        })
     }
 }
 
@@ -279,19 +273,19 @@ function decreaseFontSize () {
 
 // Functions that handle text-decoration - Bold, Italic, Underline
 function applyBold () {
-    checkAndApplySelectionBold();    
+    checkAndApplySelectionBoldV2();    
 }
 
 function applyItalic () {
-    checkAndApplySelectionItalic();
+    checkAndApplySelectionItalicV2();
 }
 
 function applyUnderline () {
-    checkAndApplySelectionUnderline();
+    checkAndApplySelectionUnderlineV2();
 }
 
 function capitalizeWord () {
-    checkAndApplySelectionCapitalize();
+    checkAndApplySelectionCapitalizeV2();
 }
 
 // Restricted functionality
@@ -525,8 +519,7 @@ function purifyContent() {
     textContainer.focus();
 }
 
-function exportAsTxt () {
-    // purifyContent(); Works But Removes style from the textbox
+function exportAsTxt () {    
     const range = document.createRange();
     range.selectNodeContents(textContainer);
     const fragment = range.extractContents(); // Removes content and creates Document Fragment
@@ -568,370 +561,214 @@ function exportAsTxt () {
     textContainer.focus();
 }
 
-function checkAndApplySelectionBold() {
-    // Fetch the text user selected
-    const selectedText = window.getSelection();    
-    const isStyled = selectedText.anchorNode.parentElement.classList.contains('bolded');
-    const isItalic = selectedText.anchorNode.parentElement.classList.contains('italic');
-    const isUnderline = selectedText.anchorNode.parentElement.classList.contains('underlined');
-    const isCapitalized = selectedText.anchorNode.parentElement.classList.contains('word-capitalize');
+function checkAndApplySelectionBoldV2() {
+    // Get user selection
+    const selection = window.getSelection();
 
-    /* Fetch the current Font Family
-    / Get the computed style */
-    const computedStyle = window.getComputedStyle(textContainer);
+    if (selection.rangeCount >= 0) {
+        const range = selection.getRangeAt(0);        
+        if (
+            range.startContainer === range.endContainer &&  // Start and end containers are the same
+            range.startOffset < range.endOffset &&           // Start offset is before the end offset
+            range.startContainer.nodeType === Node.TEXT_NODE // Start container is a text node
+          ) {
+            // User selected a single word
+            const spanElement = range.startContainer.parentNode;            
 
-    // Get the font family
-    const capturedFontFamily = computedStyle.getPropertyValue('font-family');
-
-    // If user did not choose anything, alert.    
-    if(selectedText.isCollapsed) {
-        alert("Please select a piece of text first.");
-        return;
-    }
-
-    // Check if selectedText is empty - If yes, this means user chose nothing
-    if(selectedText) {
-        /* Define range using user-chosen selection
-         Using this range we can wrap html around appropriate piece of text */
-        let range = selectedText.getRangeAt(0);
-
-        if(isStyled) { // if it does have bold class applied && does contain text nodes
-            // Since Range.startContainer and Range.endContainer both refer to the same 
-            // node, range.commonAncestorContainer is that node            
-        
-            const parentElement = selectedText.anchorNode.parentElement;
-            const classList = parentElement.classList;
-            const classArray = Array.from(classList);
-
-            // Since the classArray above will pick up the bolded class as well, we need to remove it,
-            // because our original intention was to remove that class but keep others
-            const filteredClasses = classArray.filter(className => className !== "bolded");
-
-            // Join filtered classes into a string
-            const filteredClassesString = filteredClasses.join(' ');
-
-            // Set the classes
-            parentElement.setAttribute('class', filteredClassesString);
-            
-            // Place the cursor at the end of the selection - deactivate selection
-            placeCursor();
-
-            // Remove the span if no classes are present
-            if(parentElement.classList.length === 0) {
-                // Replace the span with its content
-                parentElement.replaceWith(document.createTextNode(parentElement.textContent));
-            }
-        } else { // if it does not have a bold class applied
-            
-            // Here we need to check if there is either underline/italic/capitalized
-            // We also need to check if user selected word or a phrase (multiple words)
-            if((isItalic || isUnderline || isCapitalized) && selectedText.toString().match(/\s/)) {
-                console.log("This condition with multiple words is satisfied");             
-                
-                // Surround everything with necessary span
-                // Need a way to deactivate this whole block // maybe remove all classes and let the code below remove the span
-                // completely since it gets rid of unused spans
-                // if everything gets deleted, we need a way to take the nested spans from the content before deleting it
-                let boldSpan = document.createElement('span');
-                boldSpan.setAttribute('class', 'bolded');
-                
-                range = selectedText.getRangeAt(0);
-                boldSpan.appendChild(range.extractContents());                
-                range.deleteContents();                
-                range.insertNode(boldSpan);
-
-                // remove class, clearNode will get rid of the span
-                if(isStyled)
-                    boldSpan.classList.remove("bolded");
-
-            } else if(isItalic || isUnderline || isCapitalized) {
-                // Capture the span if there is one
-                const capturedSpan = selectedText.anchorNode.parentElement;
-                capturedSpan.classList.toggle('bolded');
-                
-                // Place the cursor at the end of the selection - deactivate selection
-                placeCursor();
-            } else {                
-                let span = document.createElement('span');
-                span.setAttribute('class', 'bolded');
-                // span.textContent = window.getSelection().toString();
-                span.appendChild(range.extractContents());
-                range.insertNode(span);
-
-                // Surround chosen text with created html element
-                // range.surroundContents(span);
-
-                // Place the cursor at the end of the selection - deactivate selection                
-                placeCursor();
-    
-                // Set the span's font-family depending on text container's font-family
-                span.style.fontFamily = capturedFontFamily;
-            }
-        }
-        
-        // Clear empty spans
-        // clearNode();
-    }
-
-    // Focus on container
-    textContainer.focus();
-}
-
-function checkAndApplySelectionItalic() {
-    // Fetch the text user selected
-    const selectedText = window.getSelection();
-    const isStyled = selectedText.anchorNode.parentElement.classList.contains('italic');
-    const isBold = selectedText.anchorNode.parentElement.classList.contains('bolded');    
-    const isUnderline = selectedText.anchorNode.parentElement.classList.contains('underlined');
-    const isCapitalized = selectedText.anchorNode.parentElement.classList.contains('word-capitalize');
-
-    /* Fetch the current Font Family
-    / Get the computed style */
-    const computedStyle = window.getComputedStyle(textContainer);
-
-    // Get the font family
-    const capturedFontFamily = computedStyle.getPropertyValue('font-family');
-
-    
-    // If user did not choose anything, alert.    
-    if(selectedText.isCollapsed) {
-        alert("Please select a piece of text first.");
-        return;
-    }
-
-    // Check if selectedText is empty - If yes, this means user chose nothing
-    if(selectedText) {
-        /* Define range using user-chosen selection
-         Using this range we can wrap html around appropriate piece of text */
-        let range = selectedText.getRangeAt(0);
-
-        if(isStyled) {
-            // Since Range.startContainer and Range.endContainer both refer to the same 
-            // node, range.commonAncestorContainer is that node
-            const parentElement = selectedText.anchorNode.parentElement;
-            const classList = parentElement.classList;
-            const classArray = Array.from(classList);
-
-            // Since the classArray above will pick up the italic class as well, we need to remove it,
-            // because our original intention was to remove that class but keep others
-            const filteredClasses = classArray.filter(className => className !== "italic");
-
-            // Join filtered classes into a string
-            const filteredClassesString = filteredClasses.join(' ');
-
-            // Set the classes
-            parentElement.setAttribute('class', filteredClassesString);
-
-            // Place the cursor at the end of the selectoin - deactivate selection
-            placeCursor();
-
-            // Remove the span if no classes are present
-            if(parentElement.classList.length === 0) {
-                // Replace the span with its content
-                parentElement.replaceWith(document.createTextNode(parentElement.textContent));
-            }
-        } else {
-
-            if(isBold || isUnderline || isCapitalized) {
-                // Capture the span if there is one
-                const capturedSpan = selectedText.anchorNode.parentElement;
-                capturedSpan.classList.toggle('italic');
-
-                // Place the cursor at the end of the selectoin - deactivate selection
-                placeCursor();                
+            // Apply a class if there isn't one, deactivate if there is one
+            if(spanElement.classList.contains('bolded')) {
+                spanElement.classList.remove('bolded');
             } else {
-                // Defining html element that is to be used when wrapping a text
-                let span = document.createElement('span');
-                span.setAttribute('class', 'italic');
-                span.textContent = window.getSelection().toString();
-
-                // Surround chosen text with created html element
-                range.surroundContents(span);
-
-                // Place the cursor at the end of the selectoin - deactivate selection
-                placeCursor();
-
-                // Set the span's font-family depending on text container's font-family
-                span.style.fontFamily = capturedFontFamily;
+                spanElement.classList.add('bolded');
             }
-        }
+          }
+  
+        // Clone the content within the range
+        const clonedContent = range.cloneContents();             
+
+        // Crate a temporary div to manipulate the cloned content
+        const tempDiv = document.createElement('div');
+        tempDiv.appendChild(clonedContent);        
+
+        // Get all the spans within temp div
+        const spanElements = tempDiv.querySelectorAll('span');        
+  
+        // Apply the specified class to each span
+        spanElements.forEach(spanElement => {            
+            spanElement.classList.toggle('bolded');            
+        });
+        
+        // Extract into function - but first modify for single word
+        range.deleteContents(); // works in pair with clearEmptySpans
+                                // Ensures that the span content gets cleared
+        insertChildren(tempDiv, range);
+
+        range.commonAncestorContainer.normalize();
+        clearEmptySpans(); // clear any empty spans        
     }
 
-    // Clear empty spans
-    // clearNode();
+    // Place the cursor at the end of the selection - deactivate selection
+    placeCursor();
 
     // Focus on container
     textContainer.focus();
 }
 
-function checkAndApplySelectionUnderline() {
-    // Fetch the text user selected
-    const selectedText = window.getSelection();
-    const isStyled = selectedText.anchorNode.parentElement.classList.contains('underlined');
-    const isBold = selectedText.anchorNode.parentElement.classList.contains('bolded');    
-    const isItalic = selectedText.anchorNode.parentElement.classList.contains('italic');
-    const isCapitalized = selectedText.anchorNode.parentElement.classList.contains('word-capitalize');
+function checkAndApplySelectionItalicV2() {
+    // Get user selection
+    const selection = window.getSelection();
 
-    /* Fetch the current Font Family
-    / Get the computed style */
-    const computedStyle = window.getComputedStyle(textContainer);
+    if (selection.rangeCount >= 0) {
+        const range = selection.getRangeAt(0);        
+        if (
+            range.startContainer === range.endContainer &&  // Start and end containers are the same
+            range.startOffset < range.endOffset &&           // Start offset is before the end offset
+            range.startContainer.nodeType === Node.TEXT_NODE // Start container is a text node
+          ) {
+            // User selected a single word
+            const spanElement = range.startContainer.parentNode;            
 
-    // Get the font family
-    const capturedFontFamily = computedStyle.getPropertyValue('font-family');
+            // Apply a class if there isn't one, deactivate if there is one
+            if(spanElement.classList.contains('italic')) {
+                spanElement.classList.remove('italic');
+            } else {
+                spanElement.classList.add('italic');
+            }
+          }
+  
+        // Clone the content within the range
+        const clonedContent = range.cloneContents();               
 
-    // If user did not choose anything, alert.    
-    if(selectedText.isCollapsed) {
-        alert("Please select a piece of text first.");
-        return;
+        // Crate a temporary div to manipulate the cloned content
+        const tempDiv = document.createElement('div');
+        tempDiv.appendChild(clonedContent);        
+
+        // Get all the spans within temp div
+        const spanElements = tempDiv.querySelectorAll('span');        
+  
+        // Apply the specified class to each span
+        spanElements.forEach(spanElement => {            
+            spanElement.classList.toggle('italic');            
+        });
+        
+        // Extract into function - but first modify for single word
+        range.deleteContents(); // works in pair with clearEmptySpans
+                                // Ensures that the span content gets cleared
+        insertChildren(tempDiv, range);
+
+        range.commonAncestorContainer.normalize();
+        clearEmptySpans(); // clear any empty spans        
     }
 
-    // Check if selectedText is empty - If yes, this means user chose nothing
-    if(selectedText) {
-        /* Define range using user-chosen selection
-         Using this range we can wrap html around appropriate piece of text */
-        let range = selectedText.getRangeAt(0);        
-
-        if(isStyled) {
-            // Since Range.startContainer and Range.endContainer both refer to the same 
-            // node, range.commonAncestorContainer is that node
-            const parentElement = selectedText.anchorNode.parentElement;
-            const classList = parentElement.classList;
-            const classArray = Array.from(classList);
-
-            // Since the classArray above will pick up the underlined class as well, we need to remove it,
-            // because our original intention was to remove that class but keep others
-            const filteredClasses = classArray.filter(className => className != "underlined");
-
-            // Join filtered classes into a string
-            const filteredClassesString = filteredClasses.join(' ');
-
-            // Set the classes
-            parentElement.setAttribute('class', filteredClassesString);
-            
-            // Place the cursor at the end of the selection - deactivate selection
-            placeCursor();
-
-            // Remove the span if no classes are present
-            if(parentElement.classList.length === 0) {
-                // Replace the span with its content
-                parentElement.replaceWith(document.createTextNode(parentElement.textContent));
-            }
-        } else {
-
-            if(isBold || isItalic || isCapitalized) {
-                // Capture the span if there is one
-                const capturedSpan = selectedText.anchorNode.parentElement;
-                capturedSpan.classList.toggle('underlined');
-
-                // Place the cursor at the end of the selection - deactivate selection
-                placeCursor();
-            } else {            
-                // Defining html element that is to be used when wrapping a text
-                let span = document.createElement('span');
-                span.setAttribute('class', 'underlined');
-                span.textContent = window.getSelection().toString();
-
-                // Surround chosen text with created html element
-                range.surroundContents(span);
-                
-                // Place the cursor at the end of the selection - deactivate selection
-                placeCursor();
-
-                // Set the span's font-family depending on text container's font-family
-                span.style.fontFamily = capturedFontFamily;            
-            }
-        }
-    }
-
-    // Clear empty spans
-    // clearNode();
+    // Place the cursor at the end of the selection - deactivate selection
+    placeCursor();
 
     // Focus on container
     textContainer.focus();
 }
 
-function checkAndApplySelectionCapitalize() {
-    // Fetch the text user selected
-    const selectedText = window.getSelection();
-    const isStyled = selectedText.anchorNode.parentElement.classList.contains('word-capitalize');
-    const isBold = selectedText.anchorNode.parentElement.classList.contains("bolded");
-    const isItalic = selectedText.anchorNode.parentElement.classList.contains("italic");
-    const isUnderline = selectedText.anchorNode.parentElement.classList.contains("underlined");
+function checkAndApplySelectionUnderlineV2() {
+    // Get user selection
+    const selection = window.getSelection();
 
-    /* Fetch the current Font Family
-    / Get the computed style */
-    const computedStyle = window.getComputedStyle(textContainer);
+    if (selection.rangeCount >= 0) {
+        const range = selection.getRangeAt(0);        
+        if (
+            range.startContainer === range.endContainer &&  // Start and end containers are the same
+            range.startOffset < range.endOffset &&           // Start offset is before the end offset
+            range.startContainer.nodeType === Node.TEXT_NODE // Start container is a text node
+          ) {
+            // User selected a single word
+            const spanElement = range.startContainer.parentNode;            
 
-    // Get the font family
-    const capturedFontFamily = computedStyle.getPropertyValue('font-family');
-
-    // If user did not choose anything, alert.    
-    if(selectedText.isCollapsed) {
-        alert("Please select a piece of text first.");
-        return;
-    }
-
-    // Check if selectedText is empty - If yes, this means user chose nothing
-    if(selectedText) {
-        /* Define range using user-chosen selection
-         Using this range we can wrap html around appropriate piece of text */
-        let range = selectedText.getRangeAt(0);        
-
-        if(isStyled) {
-            // Since Range.startContainer and Range.endContainer both refer to the same 
-            // node, range.commonAncestorContainer is that node
-            const parentElement = selectedText.anchorNode.parentElement;
-            const classList = parentElement.classList;
-            const classArray = Array.from(classList);
-
-            // Since the classArray above will pick up the bolded class as well, we need to remove it,
-            // because our original intention was to remove that class but keep others
-            const filteredClasses = classArray.filter(className => className !== "word-capitalize");
-
-            // Join filtered classes into a string
-            const filteredClassesString = filteredClasses.join(' ');
-
-            // Set the classes
-            parentElement.setAttribute('class', filteredClassesString);
-
-            // Place the cursor at the end of the selection - Deactivate selection
-            placeCursor();
-
-            // Remove the span if no classes are present
-            if(parentElement.classList.length === 0) {
-                console.log("You are here.");
-                // Replace the span with its content                
-                parentElement.replaceWith(document.createTextNode(parentElement.textContent));
-            }            
-        } else {
-
-            if(isItalic || isUnderline || isBold) {
-                // Capture the span if there is one
-                const capturedSpan = selectedText.anchorNode.parentElement;
-                capturedSpan.classList.toggle('word-capitalize');
-
-                // Place the cursor at the end of the selection - Deactivate selection
-                placeCursor();
-            } else {                
-                // Defining html element that is to be used when wrapping a text
-                let span = document.createElement('span');
-                span.setAttribute('class', 'word-capitalize');
-                span.textContent = window.getSelection().toString();
-
-                // Surround chosen text with created html element
-                range.surroundContents(span);  
-                
-                // Place the cursor at the end of the selection - deactivate selection
-                placeCursor();
-
-                // Set the span's font-family depending on text container's font-family
-                span.style.fontFamily = capturedFontFamily;   
+            // Apply a class if there isn't one, deactivate if there is one
+            if(spanElement.classList.contains('underlined')) {
+                spanElement.classList.remove('underlined');
+            } else {
+                spanElement.classList.add('underlined');
             }
-        }
+          }
+  
+        // Clone the content within the range
+        const clonedContent = range.cloneContents();             
+
+        // Crate a temporary div to manipulate the cloned content
+        const tempDiv = document.createElement('div');
+        tempDiv.appendChild(clonedContent);        
+
+        // Get all the spans within temp div
+        const spanElements = tempDiv.querySelectorAll('span');        
+  
+        // Apply the specified class to each span
+        spanElements.forEach(spanElement => {            
+            spanElement.classList.toggle('underlined');            
+        });
+        
+        // Extract into function - but first modify for single word
+        range.deleteContents(); // works in pair with clearEmptySpans
+                                // Ensures that the span content gets cleared
+        insertChildren(tempDiv, range);
+
+        range.commonAncestorContainer.normalize();
+        clearEmptySpans(); // clear any empty spans        
     }
 
-    // Clear empty spans
-    // clearNode();
+    // Place the cursor at the end of the selection - deactivate selection
+    placeCursor();
+
+    // Focus on container
+    textContainer.focus();
+}
+
+
+function checkAndApplySelectionCapitalizeV2() {
+    // Get user selection
+    const selection = window.getSelection();
+
+    if (selection.rangeCount >= 0) {
+        const range = selection.getRangeAt(0);        
+        if (
+            range.startContainer === range.endContainer &&  // Start and end containers are the same
+            range.startOffset < range.endOffset &&           // Start offset is before the end offset
+            range.startContainer.nodeType === Node.TEXT_NODE // Start container is a text node
+          ) {
+            // User selected a single word
+            const spanElement = range.startContainer.parentNode;            
+
+            // Apply a class if there isn't one, deactivate if there is one
+            if(spanElement.classList.contains('word-capitalize')) {
+                spanElement.classList.remove('word-capitalize');
+            } else {
+                spanElement.classList.add('word-capitalize');
+            }
+          }
+  
+        // Clone the content within the range
+        const clonedContent = range.cloneContents();               
+
+        // Crate a temporary div to manipulate the cloned content
+        const tempDiv = document.createElement('div');
+        tempDiv.appendChild(clonedContent);        
+
+        // Get all the spans within temp div
+        const spanElements = tempDiv.querySelectorAll('span');        
+  
+        // Apply the specified class to each span
+        spanElements.forEach(spanElement => {            
+            spanElement.classList.toggle('word-capitalize');            
+        });
+        
+        // Extract into function - but first modify for single word
+        range.deleteContents(); // works in pair with clearEmptySpans
+                                // Ensures that the span content gets cleared
+        insertChildren(tempDiv, range);
+
+        range.commonAncestorContainer.normalize();
+        clearEmptySpans(); // clear any empty spans        
+    }
+
+    // Place the cursor at the end of the selection - deactivate selection
+    placeCursor();
 
     // Focus on container
     textContainer.focus();
@@ -952,10 +789,6 @@ function redirect(id) {
         alert("Error");
         return;
     }    
-}
-
-function redirectToVimer() {
-    window.open("https://github.com/faticamer/vimer-texteditor", "_blank");
 }
 
 function dropHandler(ev) {
@@ -1017,69 +850,6 @@ function hasListElements(selection) {
     return false; // No <li> elements found in the selection
 }
 
-function updateClock() {
-    const clockTitle = document.getElementById("time");
-
-    setInterval(function() {
-        const now = new Date();
-        const hours = now.getHours();
-        const minutes = now.getMinutes();
-        const seconds = now.getSeconds();
-
-        // Determine AM/PM
-        const ampm = hours >= 12 ? "PM" : "AM";
-
-        // Convert to 12/hr clock
-        const formattedHours = hours % 12 || 12;
-
-        // Format : HH/MM/SS
-        const timeString = `${formattedHours}:${(minutes < 10 ? '0' : '') + minutes}:${(seconds < 10 ? '0' : '') + seconds} ${ampm}`;
-
-        // Update the title in HTML
-        clockTitle.textContent = timeString;
-    }, 1000);
-}
-
-function getNextNode(node) {
-    if (node.firstChild)
-        return node.firstChild;
-    while (node)
-    {
-        if (node.nextSibling)
-            return node.nextSibling;
-        node = node.parentNode;
-    }
-}
-
-function getNodesInRange(range) {
-    var start = range.startContainer;
-    var end = range.endContainer;
-    var commonAncestor = range.commonAncestorContainer;
-    var nodes = [];
-    var node;
-
-    // walk parent nodes from start to common ancestor
-    for (node = start.parentNode; node; node = node.parentNode)
-    {
-        nodes.push(node);
-        if (node == commonAncestor)
-            break;
-    }
-    nodes.reverse();
-
-    // walk children and siblings from start until end is found
-    for (node = start; node; node = getNextNode(node))
-    {
-        nodes.push(node);
-        if (node == end)
-            break;
-    }
-
-    return nodes;
-}
-
-
-
 function placeCursor() {
     const selection = window.getSelection();
     const range = selection.getRangeAt(0);
@@ -1103,7 +873,124 @@ function placeCursor() {
     cursorSelection.addRange(cursorRange);
 }
 
+// Decide when to call this function?
+function wrapWordsInSpan() {
+    // Get the textContent of textContainer
+    const textContent = textContainer.textContent;
 
+    // Split the text into words using regex
+    const words = textContent.split(/\s+/);
+
+    // Clear the content of textContainer
+    textContainer.innerHTML = '';
+
+    // Create and append a <span> element for each word, preserving white spaces
+    for(const word of words) {
+        const span = document.createElement('span');
+        
+        if(isWordWrapped(word)) {
+            span.textContent = word;
+        } else {    
+            span.textContent = word;
+            textContainer.appendChild(span);
+        }
+
+        // Append a space character after each word
+        const space = document.createTextNode(' ');
+        textContainer.appendChild(space);
+
+        // Helper function to check if a word is wrapped in a <span>
+        function isWordWrapped(word) {
+            // Replace leading and trailing space characters
+            const trimmedWord = word.trim();            
+        
+            // Create a temporary <div> and set its HTML content to the word
+            const tempDiv = document.createElement("div");
+            tempDiv.innerHTML = trimmedWord;
+        
+            // Check if there is a <span> within div
+            return tempDiv.querySelector('span') !== null;
+        }
+    }
+}
+
+/**
+ * Functions that aren't related to text modifications
+ * 
+ * updateClock()
+ * 
+ * redirectToVimer()
+ * 
+ * clearEmptySpans()
+ * 
+ * insertChildren()
+ * 
+ * placeCursorAtEnd()
+ */
+
+function updateClock() {
+    const clockTitle = document.getElementById("time");
+
+    setInterval(function() {
+        const now = new Date();
+        const hours = now.getHours();
+        const minutes = now.getMinutes();
+        const seconds = now.getSeconds();
+
+        // Determine AM/PM
+        const ampm = hours >= 12 ? "PM" : "AM";
+
+        // Convert to 12/hr clock
+        const formattedHours = hours % 12 || 12;
+
+        // Format : HH/MM/SS
+        const timeString = `${formattedHours}:${(minutes < 10 ? '0' : '') + minutes}:${(seconds < 10 ? '0' : '') + seconds} ${ampm}`;
+
+        // Update the title in HTML
+        clockTitle.textContent = timeString;
+    }, 1000);
+}
+
+function redirectToVimer() {
+    window.open("https://github.com/faticamer/vimer-texteditor", "_blank");
+}
+
+function clearEmptySpans() {
+    const spans = textContainer.querySelectorAll('span');
+
+    spans.forEach(span => {
+        if(span.textContent.trim() === '') {
+            // Remove the empty <span> element
+            span.parentNode.removeChild(span);
+        }
+    })
+}
+
+function insertChildren(tempDiv, range) {
+    const nodes = [];
+    for ( let i = 0; i < tempDiv.childNodes.length; i++ ) {
+        const child = tempDiv.childNodes[i];
+        nodes.push(child);
+    }
+    for ( let i = nodes.length - 1; i >= 0; i--) {
+        range.insertNode(nodes[i]);
+    }
+}
+
+function placeCursorAtEnd() {
+    // Create a range
+    const range = document.createRange();
+
+    // Set the range to the end of the content within the div
+    range.selectNodeContents(textContainer);
+    range.collapse(false); // Collapse the range to the end
+
+    // Create a selection and set the range
+    const selection = window.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(range);
+}
+  
 updateClock();
 toggleLightMode();
 toggleTooltips();
