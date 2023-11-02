@@ -956,7 +956,6 @@ function redirectToVimer() {
 }
 
 function clearEmptySpans() {
-    // Select all span elements from a contenteditable div (textContainer)
     const spans = textContainer.querySelectorAll('span');
 
     spans.forEach(span => {
@@ -968,7 +967,7 @@ function clearEmptySpans() {
 }
 
 function insertChildren(tempDiv, range) {
-    const nodes = []; // Create an empty array that will hold nodes within tempDiv (argument)
+    const nodes = [];
     for ( let i = 0; i < tempDiv.childNodes.length; i++ ) {
         const child = tempDiv.childNodes[i];
         nodes.push(child);
