@@ -298,7 +298,8 @@ svg { fill: #c0c0c0; }
 }
 
 .span-h2 { color: #c0c0c0; }
-span     { color:#AA0000;  }
+span     { color: azure;  }
+.vimer   { color: #AA0000; }
 
 /*------------------------------------*\
   #COMPONENTS
