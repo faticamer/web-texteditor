@@ -54,12 +54,24 @@ textContainer.addEventListener("input", function () {
     
     clearTimeout(timeoutId);
     timeoutId = setTimeout(function () {
-        wrapWordsInSpan();  // Wraps each word in its own span, so each word can be modified separately without using messy logic 
+        //wrapWordsInSpan();  // Wraps each word in its own span, so each word can be modified separately 
                             // and trying to cover sa many edge cases as possible
+        wrapNewText();
         placeCursorAtEnd(); // Place the cursor at the end of the text after the delay
         clearEmptySpans();  // If there are any empty spans this function call will handle them.
     }, 1000);
 });
+
+textContainer.addEventListener('click', function(event) {
+    if(event.target.tagName === 'A') {
+        event.preventDefault();
+
+        // Get the href attribute of the clicked link
+        const href = event.target.getAttribute('href');
+
+        window.open(href, "_blank");
+    }
+})
 
 clearButton.addEventListener("mouseover", function() {
     const svg = document.querySelector(".clear-btn svg");
@@ -449,61 +461,142 @@ function alignJustify () {
 
 function addHyperlink() {
     // Obtain user-selected text
-    const selectedText = window.getSelection();    
-    const isStyled = selectedText.anchorNode.parentElement.classList.contains('highlighted');
+    const selectedText = window.getSelection();     
     
     // Defined regexPattern variable to ensure user included some of the necessary components of every URL.
     const regexPattern = /^(http|https|www|com)/;
 
-    
-    /* Fetch the current Font Family
-    / Get the computed style */
-    const computedStyle = window.getComputedStyle(textContainer);
+    if(selectedText.rangeCount > 0) {
+        const range = selectedText.getRangeAt(0);
 
-    // Get the font family
-    const capturedFontFamily = computedStyle.getPropertyValue('font-family');   
+        // Checks multiple selection, but not single word
+        const clonedContents = range.cloneContents();
+        var isPresent = false; // Used to determine whether the block below will be executed or not        
 
-    // Check if the selection is empty, if not execute if block
-    if(selectedText) {
-        if(isStyled) {
-            // Since Range.startContainer and Range.endContainer both refer to the same 
-            // node, range.commonAncestorContainer is that node
-            const parentElement = selectedText.anchorNode.parentElement;
-            parentElement.replaceWith(document.createTextNode(parentElement.textContent));
-        } else {
-            // Convert to lowercase and search for blank spaces to test for validity
-            const URL = prompt("Enter a valid URL: ");
-            let newURL = URL.toLowerCase();
+        // Creating a temporary div to test all selected spans and look for anchor tags
+        // This block will cover the removal of anchor tags
+        const tempDiv = document.createElement('div');
+        tempDiv.appendChild(clonedContents);        
+        const spans = tempDiv.querySelectorAll('span');
+        spans.forEach(span => {            
+            const spanAnchorTag = span.querySelector('a');
+            if(spanAnchorTag) {  
+                isPresent = true;            
+                // Anchor tag found within the span
+                // Replace the anchor tag with its text content
+                const text = document.createTextNode(spanAnchorTag.textContent);
+                span.replaceChild(text, spanAnchorTag);             
+            }
+        })
+        
+        // If the condition above was satisfied (meaning anchor tag was found)
+        // it switched the boolean var to true, therefore code below is executed
+        if(isPresent) {
+            range.deleteContents();
+            insertChildren(tempDiv, range); // Insert the temporary div instead previous content
+            clearEmptyAnchors(); // Call the function to remove any blank anchor tags
+            placeCursor();  // Place the cursor at the end of the selection
+            return;
+        }
 
-            // Testing the regexPattern against user-prompted URL
-            if(regexPattern.test(newURL)) {            
-                let range = selectedText.getRangeAt(0);            
+        // Check the single word case now
+        if(
+            range.startContainer === range.endContainer &&          // Start and end containers are the same
+            range.startOffset < range.endOffset &&                  // Start offset is before the end offset
+            range.startContainer.nodeType === Node.TEXT_NODE &&     // Start container is a text node
+            range.startContainer.parentNode.nodeName.toLowerCase() === 'a'
+        ) {            
+            const anchor = range.startContainer.parentNode;
+            const span = anchor.parentElement;                     
+            if(anchor) {
+                const text = document.createTextNode(anchor.textContent); // Extracted text from <a>                
+                span.replaceChild(text, anchor);
+                clearEmptyAnchors(); // Call the function to remove any blank anchor tags
+                placeCursor();  // Place the cursor at the end of the selection
+                return;
+            }
+        }
 
+        const URL = prompt("Enter a valid URL: ");
+        if(URL === null) {
+            alert("Prompt was canceled.");
+            placeCursor();
+            return;
+        } else if(URL.trim() === '') {
+            alert("You have to provide a valid URL. Try again.");
+            placeCursor();
+            return;
+        }
+        // Convert to lowercase if user decided to type in UPPERCASE
+        let newURL = URL.toLowerCase();
+
+        // Testing the regexPattern against user-prompted URL
+        if(regexPattern.test(newURL)) {
+            if (
+                range.startContainer === range.endContainer &&   // Start and end containers are the same
+                range.startOffset < range.endOffset &&           // Start offset is before the end offset
+                range.startContainer.nodeType === Node.TEXT_NODE // Start container is a text node
+            ) {
+                /**
+                 * IF THERE IS ANCHOR TAG ALREADY, REMOVE WITH SPAN
+                 */
+                // Clone the contents within the range                
+                const clonedContent = range.cloneContents();                
+                let extractedContent = ''; // Used to extract the text content within child nodes in a range
+                                            // Reusable for multi-word selection                                          
+                clonedContent.childNodes.forEach(childNode => {
+                    if(childNode.nodeType === Node.TEXT_NODE) {
+                        extractedContent += childNode.textContent;
+                    }
+                })
                 // Create anchor element to handle redirection
                 const link = document.createElement('a');
                 link.setAttribute("class", "highlighted");          
                 link.href = newURL;
                 link.target = "_blank";
-                link.textContext = selectedText;
+                link.textContent = extractedContent;
+    
+                range.deleteContents();
+                range.insertNode(link);                
+            } else {                
+                // Clone the contents within the range                                          
+                const clonedContent = range.cloneContents();                        
 
-                // Function used to assign necessary href to a hyperlinked element
-                function handleDynamicAnchor() {
-                    window.open(newURL, "_blank");
-                }
-                link.onclick = handleDynamicAnchor;
+                const tempDiv = document.createElement('div');
+                tempDiv.appendChild(clonedContent);                          
 
-                // Wrap the necessary (selected) part with an anchor tag containing all necessary attributes            
-                range.surroundContents(link);
+                // Get all the spans within temp div
+                const spanElements = tempDiv.querySelectorAll('span');            
+        
+                spanElements.forEach(spanElement => {                    
+                    let extractedText = '';
+                    const generatedLink = document.createElement('a');
+                    extractedText += spanElement.textContent;
 
-                // Set the span's font-family depending on text container's font-family
-                link.style.fontFamily = capturedFontFamily;
+                    // Generate one time anchor tag
+                    generatedLink.textContent = extractedText;
+                    generatedLink.href = newURL;
+                    generatedLink.target = "_blank";     
+                    generatedLink.classList.add('highlighted');              
+
+                    spanElement.textContent="";                    
+                    spanElement.appendChild(generatedLink);                
+                })
+
+                range.deleteContents(); // Works in pair with clearEmptySpans
+                                        // Ensures that the span contents gets cleared
+                insertChildren(tempDiv, range);
             }
         }
-    } else {
-        alert("No text selected!");
-    }
+        range.commonAncestorContainer.normalize();
+        clearEmptySpans(); // Clear any empty spans
+        clearEmptyAnchors(); // Clear any empty anchor tags
+    }    
 
-    // Focus on container
+    // Place the cursor at the end of the selection - deactivate selection
+    placeCursor();
+
+    // Focus on textContainer
     textContainer.focus();
 }
 
@@ -584,7 +677,7 @@ function checkAndApplySelectionBoldV2() {
           }
   
         // Clone the content within the range
-        const clonedContent = range.cloneContents();             
+        const clonedContent = range.cloneContents();        
 
         // Crate a temporary div to manipulate the cloned content
         const tempDiv = document.createElement('div');
@@ -597,8 +690,7 @@ function checkAndApplySelectionBoldV2() {
         spanElements.forEach(spanElement => {            
             spanElement.classList.toggle('bolded');            
         });
-        
-        // Extract into function - but first modify for single word
+                
         range.deleteContents(); // works in pair with clearEmptySpans
                                 // Ensures that the span content gets cleared
         insertChildren(tempDiv, range);
@@ -703,8 +795,7 @@ function checkAndApplySelectionUnderlineV2() {
         spanElements.forEach(spanElement => {            
             spanElement.classList.toggle('underlined');            
         });
-        
-        // Extract into function - but first modify for single word
+                
         range.deleteContents(); // works in pair with clearEmptySpans
                                 // Ensures that the span content gets cleared
         insertChildren(tempDiv, range);
@@ -757,8 +848,7 @@ function checkAndApplySelectionCapitalizeV2() {
         spanElements.forEach(spanElement => {            
             spanElement.classList.toggle('word-capitalize');            
         });
-        
-        // Extract into function - but first modify for single word
+                
         range.deleteContents(); // works in pair with clearEmptySpans
                                 // Ensures that the span content gets cleared
         insertChildren(tempDiv, range);
@@ -850,6 +940,30 @@ function hasListElements(selection) {
     return false; // No <li> elements found in the selection
 }
 
+/**
+ * Functions that aren't related to text modifications
+ * 
+ * placeCursor()
+ * 
+ * wrapNewText();
+ * 
+ * containsTextNode(container)
+ * 
+ * updateClock()
+ * 
+ * redirectToVimer()
+ * 
+ * clearEmptySpans()
+ * 
+ * clearEmptyAnchors()
+ * 
+ * insertChildren()
+ * 
+ * placeCursorAtEnd()
+ * 
+ */
+
+
 function placeCursor() {
     const selection = window.getSelection();
     const range = selection.getRangeAt(0);
@@ -873,60 +987,59 @@ function placeCursor() {
     cursorSelection.addRange(cursorRange);
 }
 
-// Decide when to call this function?
-function wrapWordsInSpan() {
+function wrapNewText() {
+    
     // Get the textContent of textContainer
-    const textContent = textContainer.textContent;
+    const textContent = textContainer.textContent;    
 
     // Split the text into words using regex
-    const words = textContent.split(/\s+/);
+    const words = textContent.split(/\s+/);    
 
-    // Clear the content of textContainer
-    textContainer.innerHTML = '';
-
-    // Create and append a <span> element for each word, preserving white spaces
-    for(const word of words) {
-        const span = document.createElement('span');
-        
-        if(isWordWrapped(word)) {
-            span.textContent = word;
-        } else {    
+    if(containsTextNode(textContainer)) {
+        // Create and append span element for each word, preserving white spaces
+        textContainer.innerHTML = '';
+        for(const word of words) {
+            const span = document.createElement('span');            
             span.textContent = word;
             textContainer.appendChild(span);
+
+            // Append white space character after each word
+            const space = document.createTextNode(' ');
+            textContainer.appendChild(space);
         }
-
-        // Append a space character after each word
-        const space = document.createTextNode(' ');
-        textContainer.appendChild(space);
-
-        // Helper function to check if a word is wrapped in a <span>
-        function isWordWrapped(word) {
-            // Replace leading and trailing space characters
-            const trimmedWord = word.trim();            
+    } else {
+        const lastSpan = textContainer.querySelector('span:last-child');
+        const spanClass = lastSpan.classList.value;
+        const words = lastSpan.textContent.split(/\s+/);                
+        // const wordsToStore = words.slice(1); // Ignore the first word
+        textContainer.removeChild(lastSpan); // Remove the last span          
         
-            // Create a temporary <div> and set its HTML content to the word
-            const tempDiv = document.createElement("div");
-            tempDiv.innerHTML = trimmedWord;
-        
-            // Check if there is a <span> within div
-            return tempDiv.querySelector('span') !== null;
+        for(let i = 0; i < words.length; i++) {
+            const span = document.createElement('span');
+            span.textContent = words[i];
+            if(i == 0) {
+                // If there was any class within the last span, we need to save the class
+                // and apply it to the first word, when new sequence of spans is to be generated 
+                span.classList.add(spanClass);
+            }            
+            textContainer.appendChild(span);
+
+            // Append white space character after each word
+            const space = document.createTextNode(' ');
+            textContainer.appendChild(space);
         }
     }
 }
 
-/**
- * Functions that aren't related to text modifications
- * 
- * updateClock()
- * 
- * redirectToVimer()
- * 
- * clearEmptySpans()
- * 
- * insertChildren()
- * 
- * placeCursorAtEnd()
- */
+function containsTextNode(container) {
+    for(let i = 0; i < container.childNodes.length; i++) {
+        const node = container.childNodes[i];
+        if(node.nodeType !== Node.TEXT_NODE) {
+            return false;
+        }
+    }
+    return true;
+}
 
 function updateClock() {
     const clockTitle = document.getElementById("time");
@@ -966,6 +1079,23 @@ function clearEmptySpans() {
     })
 }
 
+function clearEmptyAnchors() {
+    const spans = textContainer.querySelectorAll('span');    
+
+    spans.forEach(span => {
+        const anchor = span.querySelector('a');
+        if(anchor && anchor.textContent.trim() === '') {
+            // Remove the empty <a> tag
+            anchor.parentNode.removeChild(anchor);
+        }
+
+        // If the span is empty, remove it as well
+        if(span.textContent.trim() === '') {
+            span.parentNode.removeChild(span);
+        }
+    })
+}
+
 function insertChildren(tempDiv, range) {
     const nodes = [];
     for ( let i = 0; i < tempDiv.childNodes.length; i++ ) {
@@ -976,8 +1106,8 @@ function insertChildren(tempDiv, range) {
      * I couldn't figure out why, but if the counter started from 0, each inserted node would be in reverse
      * If there was a sentence "This was a sample text" and user chose to apply Bold style to "sample text"
      * the end result would be something like this "This was textsample". It would insert it the other way around, which
-     * would probably happen with all other cases. Also, one might notice that one for could've been used to insert 
-     * all the nodes, however, there was a bug in that case as well, where spans (individiual words) were not separated 
+     * would probably happen with all other cases. Also, one might notice that one for loop could've been used to insert 
+     * all the nodes, however, there was a bug in that case as well, where spans (individual words) were not separated 
      * from each other. So the end result in this case was something like "This was a sampletext." The style would be
      * applied, but the press of any button would merge the words together. I could not figure out why but noticed that two
      * loops solved this issue without any complex logic.
@@ -988,6 +1118,16 @@ function insertChildren(tempDiv, range) {
 }
 
 function placeCursorAtEnd() {
+  
+    // Create a new text node for the newly added text
+    const newNode = document.createTextNode(' '); // You can set the text content if needed
+
+    // Insert the new text node after the last <span> element or at the end of the content
+    const lastSpan = textContainer.querySelector('span:last-child');    
+    if (lastSpan) {
+        textContainer.appendChild(newNode);
+    }
+
     // Create a range
     const range = document.createRange();
 
@@ -998,8 +1138,9 @@ function placeCursorAtEnd() {
     // Create a selection and set the range
     const selection = window.getSelection();
     selection.removeAllRanges();
-    selection.addRange(range);
+    selection.addRange(range);   
 }
+  
   
 updateClock();
 toggleLightMode();
