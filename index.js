@@ -3,9 +3,22 @@ const tools = document.querySelector(".button-dark-mode");
 const fileButton = document.getElementById("file-button");
 const fileInput = document.getElementById("file-input");
 const clearButton = document.querySelector(".clear-btn");
+const colorPickerButton = document.getElementById("color-picker-button");
+const colorPicker = document.getElementById("color-picker");
 let timeoutId;
+let initialLineHeightValue = 1.1;
 
 /*Commit test*/
+
+// Close the dropdown menu for line-spacing if the user clicks outside of it
+window.onclick = function(event) {  
+    if(!event.target.matches('.dropbtn')) {
+        var dropdown = document.getElementById('lineSpacingDropdown');
+        if(dropdown.style.display === "block") {
+            dropdown.style.display = "none";
+        }
+    }
+}
 
 window.addEventListener('scroll', function() {
     // Select all elements with class 'card'
@@ -53,9 +66,7 @@ textContainer.addEventListener("input", function () {
     charField.textContent = `Char count: ${characterCount}`;
     
     clearTimeout(timeoutId);
-    timeoutId = setTimeout(function () {
-        //wrapWordsInSpan();  // Wraps each word in its own span, so each word can be modified separately 
-                            // and trying to cover sa many edge cases as possible
+    timeoutId = setTimeout(function () {        
         wrapNewText();
         placeCursorAtEnd(); // Place the cursor at the end of the text after the delay
         clearEmptySpans();  // If there are any empty spans this function call will handle them.
@@ -99,7 +110,13 @@ clearButton.addEventListener("mouseout", function() {
 
 clearButton.addEventListener("click", function() {
     textContainer.textContent = "";
+});
+
+colorPickerButton.addEventListener("click", function() {    
+    colorPicker.click();    
 })
+
+colorPicker.addEventListener("input", changeFontColor, "false");
 
 // Function that handles light/night mode mode
 function toggleLightMode () {
@@ -110,7 +127,7 @@ function toggleLightMode () {
     newSvg.setAttribute('class', 'lightmode-button-svg');
     newSvg.setAttribute('height', '1em');
     newSvg.setAttribute('viewBox', '0 0 384 512');
-    newSvg.innerHTML = '<path d="M144.7 98.7c-21 34.1-33.1 74.3-33.1 117.3c0 98 62.8 181.4 150.4 211.7c-12.4 2.8-25.3 4.3-38.6 4.3C126.6 432 48 353.3 48 256c0-68.9 39.4-128.4 96.8-157.3zm62.1-66C91.1 41.2 0 137.9 0 256C0 379.7 100 480 223.5 480c47.8 0 92-15 128.4-40.6c1.9-1.3 3.7-2.7 5.5-4c4.8-3.6 9.4-7.4 13.9-11.4c2.7-2.4 5.3-4.8 7.9-7.3c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-3.7 .6-7.4 1.2-11.1 1.6c-5 .5-10.1 .9-15.3 1c-1.2 0-2.5 0-3.7 0c-.1 0-.2 0-.3 0c-96.8-.2-175.2-78.9-175.2-176c0-54.8 24.9-103.7 64.1-136c1-.9 2.1-1.7 3.2-2.6c4.0-3.2 8.2-6.2 12.5-9c3.1-2 6.3-4.0 9.6-5.8c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-3.6-.3-7.1-.5-10.7-.6c-2.7-.1-5.5-.1-8.2-.1c-3.3 0-6.5 .1-9.8 .2c-2.3 .1-4.6 .2-6.9 .4z"/>';
+    newSvg.innerHTML = '<path d="M144.7 98.7c-21 34.1-33.1 74.3-33.1 117.3c0 98 62.8 181.4 150.4 211.7c-12.4 2.8-25.3 4.3-38.6 4.3C126.6 432 48 353.3 48 256c0-68.9 39.4-128.4 96.8-157.3zm62.1-66C91.1 41.2 0 137.9 0 256C0 379.7 100 480 223.5 480c47.8 0 92-15 128.4-40.6c1.9-1.3 3.7-2.7 5.5-4c4.8-3.6 9.4-7.4 13.9-11.4c2.7-2.4 5.3-4.8 7.9-7.3c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-3.7 .6-7.4 1.2-11.1 1.6c-5 .5-10.1 .9-15.3 1c-1.2 0-2.5 0-3.7 0c-.1 0-.2 0-.3 0c-96.8-.2-175.2-78.9-175.2-176c0-54.8 24.9-103.7 64.1-136c1-.9 2.1-1.7 3.2-2.6c4.0-3.2 8.2-6.2 12.5-9c3.1-2 6.3-4.0 9.6-5.8c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-3.6-.3-7.1-.5-10.7-.6c-2.7-.1-5.5-.1-8.2-.1c-3.3 0-6.5 .1-9.8 .2c-2.3 .1-4.6 .2-6.9 .4z"/>';    
 
     const nightmodeSvg = document.querySelector(".nightmode-button-svg");
     const toggleLightButton = document.querySelector(".nightmode-button");    
@@ -124,7 +141,20 @@ function toggleLightMode () {
     const cardHeader = document.querySelector(".card-h1");
     const sectionTwoContent = document.querySelector(".section-two-content");
     const sectionTwoParagraph = document.querySelector(".section-two-paragraph");
-    const characterCount = document.querySelector(".character-count");
+    const characterCount = document.querySelector(".character-count");    
+    const svgDarkElements = document.querySelectorAll(".svg-dark");    
+    const vimerDark = document.querySelector(".vimer");
+    const sectionTwoH2 = document.querySelector(".section-two-h2"); 
+    const sectionTwoH1 = document.querySelector(".section-two-h1"); 
+    const spanh2 = document.querySelector(".span-h2");
+    const checkVimerButton = document.querySelector(".check-vimer-button");
+    const gitButtonText = document.querySelector(".git-button-text");
+    const cardsH2 = document.querySelectorAll(".card-h2");
+    const cardsSvg = document.querySelectorAll(".card-svg");
+    const authorNamePrefix = document.querySelectorAll(".author-name-prefix");
+    const halfCircles = document.querySelectorAll(".half-circle");
+    const goUpBtn = document.querySelectorAll(".go-up-button");
+    const vimerDarkArea = document.querySelector(".main-container-2-img");
     const body = document.body;
 
     toggleLightButton.addEventListener("click", () => {
@@ -133,10 +163,13 @@ function toggleLightMode () {
         if(isNightMode) {
             nightmodeSvg.replaceWith(newSvg);
             logo.setAttribute('src', './public/images/vimer-light.png');
+            vimerDarkArea.setAttribute('src', './public/images/vimer-light-mode.png');
         } else {
             newSvg.replaceWith(nightmodeSvg);
             logo.setAttribute('src', './public/images/vimer2.png');
+            vimerDarkArea.setAttribute('src', './public/images/vimer-dark.png');
         }
+
 
         // Toggle the necessary classes that simulate the light mode
         body.classList.toggle("active");
@@ -149,15 +182,42 @@ function toggleLightMode () {
         sectionTwoContent.classList.toggle("section-two-content-light");
         sectionTwoParagraph.classList.toggle("section-two-paragraph-light");
         characterCount.classList.toggle("character-count-light");
-        clearButton.classList.toggle("clear-btn-light")
+        clearButton.classList.toggle("clear-btn-light");
+        vimerDark.classList.toggle("vimer-light");
+        sectionTwoH2.classList.toggle("section-two-h2-light");
+        sectionTwoH1.classList.toggle("section-two-h1-light");
+        spanh2.classList.toggle("span-h2-light");
+        checkVimerButton.classList.toggle("check-vimer-button-light");
+        gitButtonText.classList.toggle("git-button-text-light");  
+        vimerDarkArea.classList.toggle("main-container-2-img-light");    
+
+
         cards.forEach(card => {
             card.classList.toggle("card-light");
-        })   
+        });
         buttons.forEach(button => {
             button.classList.toggle("button-light-mode");
         });
         navLinks.forEach(navLink => {
             navLink.classList.toggle("nav-links-a-light");
+        });
+        svgDarkElements.forEach(svgDarkElement => {
+            svgDarkElement.classList.toggle("svg-light");
+        });
+        cardsH2.forEach(card => {
+            card.classList.toggle("card-h2-light");
+        });
+        cardsSvg.forEach(card => {
+            card.classList.toggle("card-svg-light");
+        });
+        authorNamePrefix.forEach(author => {
+            author.classList.toggle("author-name-prefix-light");
+        });
+        halfCircles.forEach(halfCircle => {
+            halfCircle.classList.toggle("half-circle-light");
+        });
+        goUpBtn.forEach(btn => {
+            btn.classList.toggle("go-up-button-light");
         })
     });
 };
@@ -221,6 +281,32 @@ function selectFontStyle() {
         spanElements.forEach(spanElement => {
             spanElement.style.fontFamily = finalFont;
         })
+    }
+}
+
+function changeFontColor(event) {
+    /**
+     * Check if any text is selected, if not apply color change to the whole text
+     */
+    const selection = window.getSelection();    
+    const range = selection.getRangeAt(0);
+    if(
+        range.startContainer === range.endContainer &&
+        range.startOffset < range.endOffset &&
+        range.startContainer.nodeType === Node.TEXT_NODE
+    ) {
+        console.log("Condition satisfied");
+
+        // Condition satisfied - User selected a single word
+        const spanElement = range.startContainer.parentNode;
+
+        // Apply font color if no font color is present
+        spanElement.style.color = event.target.value;
+    } else {
+        const spans = textContainer.querySelectorAll('span');
+        spans.forEach(span => {
+            span.style.color = event.target.value;
+        })  
     }
 }
 
@@ -300,134 +386,17 @@ function capitalizeWord () {
     checkAndApplySelectionCapitalizeV2();
 }
 
-// Restricted functionality
-function applyBulletList () {
-    // const selectedText = window.getSelection().toString();
-    const selectedPortion = window.getSelection();    
-
-    // Create li html element and apply a class to it    
-    const listElement = document.createElement('li');
-    listElement.classList.add('custom-unordered-list');
-
-    // Crate ul html element and apply a class to it
-    const unorderedList = document.createElement('ul');
-    unorderedList.classList.add('u-list');
-    
-    // 1. Case when container is empty - trim used for getting rid of white spaces
-    if(textContainer.textContent.trim() === '') {
-        // Here we need to check if user is trying to disable the li elements
-        let range = document.createRange();
-        range.selectNodeContents(textContainer);        
-        range.insertNode(unorderedList);
-        unorderedList.appendChild(listElement);
-
-    } else if (selectedPortion) {
-        if(hasListElements(selectedPortion)) {
-            // Get the common ancestor element
-            let range = document.createRange();
-            range.selectNodeContents(selectedPortion.anchorNode);
-            const commonAncestor = range.commonAncestorContainer;            
-
-            // Check if the common ancestor is an element node - it could be a text node
-            if(commonAncestor.nodeType === Node.ELEMENT_NODE) { // not satisfied                
-                // Iterate over child nodes
-                const childNodes = commonAncestor.childNodes;                
-                for(let i = 0; i < childNodes.length; i++) {
-                    const node = childNodes[i];
-
-                    // Check if node is within range
-                    if(range.intersectsNode(node)) {
-                        node.replaceWith(document.createTextNode(node.textContent + "\n"));
-                    }
-                } // End of loop
-                
-                // Removing the ul as well
-                commonAncestor.replaceWith(document.createTextNode(commonAncestor.textContent));
-                return;
-            }
-        } else {            
-            // Define range
-            let range = document.createRange();
-            range.selectNodeContents(selectedPortion.anchorNode);
-            range.surroundContents(listElement);
-            
-            // Range must be updated again, since new element was inserted, and previously detected anchorNode is now different
-            range.selectNodeContents(selectedPortion.anchorNode.parentNode);
-
-            // Add li items
-            range.surroundContents(unorderedList); 
-        }
-    } else {
-        // Temporary adjustment
-        alert("Not possible to implement bullet list there.");
-    }
-
-    // Focus on container
-    textContainer.focus();
+// This function will only toggle the dropdown menu
+function setLineSpacing() {    
+    var dropdown = document.getElementById("lineSpacingDropdown");
+    dropdown.style.display = (dropdown.style.display === "block") ? "none" : "block";
 }
 
-// Restricted functionality
-function applyNumberedList () { 
-    // const selectedText = window.getSelection().toString();
-    const selectedPortion = window.getSelection();    
-
-    // Create li html element and apply a class to it    
-    const listElement = document.createElement('li');
-    listElement.classList.add('custom-ordered-list');
-
-    // Crate ul html element and apply a class to it
-    const unorderedList = document.createElement('ul');
-    unorderedList.classList.add('u-list');
-    
-    // 1. Case when container is empty - trim used for getting rid of white spaces
-    if(textContainer.textContent.trim() === '') {
-        // Here we need to check if user is trying to disable the li elements
-        let range = document.createRange();
-        range.selectNodeContents(textContainer);        
-        range.insertNode(unorderedList);
-        unorderedList.appendChild(listElement);
-
-    } else if (selectedPortion) {        
-        if(selectedPortion.rangeCount > 0) {
-            const range = selectedPortion.getRangeAt(0);
-
-            // Get the common ancestor element
-            const commonAncestor = range.commonAncestorContainer;            
-
-            // Check if the common ancestor is an element node - it could be a text node
-            if(commonAncestor.nodeType === Node.ELEMENT_NODE) {
-                // Iterate over child nodes
-                const childNodes = commonAncestor.childNodes;                
-                for(let i = 0; i < childNodes.length; i++) {
-                    const node = childNodes[i];
-
-                    // Check if node is within range
-                    if(range.intersectsNode(node)) {
-                        node.replaceWith(document.createTextNode(node.textContent + "\n"));
-                    }
-                }
-                // Removing the ul as well
-                commonAncestor.replaceWith(document.createTextNode(commonAncestor.textContent));
-            }
-        } else {
-            // Define range
-            let range = document.createRange();
-            range.selectNodeContents(selectedPortion.anchorNode);
-            range.surroundContents(listElement);
-            
-            // Range must be updated again, since new element was inserted, and previously detected anchorNode is now different
-            range.selectNodeContents(selectedPortion.anchorNode.parentNode);
-
-            // Add li items
-            range.surroundContents(unorderedList); 
-        }
-    } else {
-        // Temporary adjustment
-        alert("Not possible to implement bullet list there.");
-    }
-
-    // Focus on container
-    textContainer.focus();
+// This function is closely related to the function above. When the dropdown menu appears,
+// anchor tags within it are responsible for handling the values, this function picks up the value
+// and sets the line-height property on the textContainer's text.
+function setLineHeight(value) {
+    textContainer.style.lineHeight = value;
 }
 
 // Functions that control the alignment of a text within textContainer
@@ -835,18 +804,18 @@ function checkAndApplySelectionCapitalizeV2() {
           }
   
         // Clone the content within the range
-        const clonedContent = range.cloneContents();               
+        const clonedContent = range.cloneContents();
 
         // Crate a temporary div to manipulate the cloned content
         const tempDiv = document.createElement('div');
         tempDiv.appendChild(clonedContent);        
 
         // Get all the spans within temp div
-        const spanElements = tempDiv.querySelectorAll('span');        
+        const spanElements = tempDiv.querySelectorAll('span');
   
         // Apply the specified class to each span
         spanElements.forEach(spanElement => {            
-            spanElement.classList.toggle('word-capitalize');            
+            spanElement.classList.toggle('word-capitalize');
         });
                 
         range.deleteContents(); // works in pair with clearEmptySpans
@@ -947,6 +916,8 @@ function hasListElements(selection) {
  * 
  * wrapNewText();
  * 
+ * hasClasses(element)
+ * 
  * containsTextNode(container)
  * 
  * updateClock()
@@ -993,7 +964,9 @@ function wrapNewText() {
     const textContent = textContainer.textContent;    
 
     // Split the text into words using regex
-    const words = textContent.split(/\s+/);    
+    const words = textContent.split(/\s+/);
+
+    const lastSpan = textContainer.querySelector('span:last-child');
 
     if(containsTextNode(textContainer)) {
         // Create and append span element for each word, preserving white spaces
@@ -1007,8 +980,21 @@ function wrapNewText() {
             const space = document.createTextNode(' ');
             textContainer.appendChild(space);
         }
+    } else if((!containsTextNode(textContainer)) && (!hasClasses(textContainer.querySelector('span:last-child')))) {
+        const words = lastSpan.textContent.split(/\s+/);
+        textContainer.removeChild(lastSpan); // Remove the last span
+        
+        for (const word of words) {
+            const span = document.createElement('span');
+            span.textContent = word;
+            textContainer.appendChild(span);
+
+            // Append white space character after each word
+            const space = document.createTextNode(' ');
+            textContainer.appendChild(space);
+        }
     } else {
-        const lastSpan = textContainer.querySelector('span:last-child');
+                
         const spanClass = lastSpan.classList.value;
         const words = lastSpan.textContent.split(/\s+/);                
         // const wordsToStore = words.slice(1); // Ignore the first word
@@ -1030,6 +1016,13 @@ function wrapNewText() {
         }
     }
 }
+
+function hasClasses(element) {
+    if (element) {
+      return element.classList.length > 0;
+    }
+    return false;
+  }
 
 function containsTextNode(container) {
     for(let i = 0; i < container.childNodes.length; i++) {
