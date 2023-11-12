@@ -1,0 +1,46 @@
+/**
+ * CONTENTS
+ *
+ * SETTINGS
+ * Global...............Globally-available variables and config.
+ * @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200;300&display=swap');
+ * imported Font Family from Google's API
+ *
+ * COMPONENTS
+ * Page-head............The main page header.
+ * Page-foot............The main page footer.
+ * Buttons..............Button elements.
+ *
+ * JAVASCRIPT
+ * Dynamic classes......Classes added/modified through JS
+ *
+ */
+
+ /*------------------------------------*\
+  #SETTINGS
+\*------------------------------------*/
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200;300&display=swap');
+
+* {
+    padding: 0;
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: #F8F0E5;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25' viewBox='0 0 1600 800'%3E%3Cg %3E%3Cpolygon fill='%23f2e6d8' points='1600 160 0 460 0 350 1600 50'/%3E%3Cpolygon fill='%23ecddcb' points='1600 260 0 560 0 450 1600 150'/%3E%3Cpolygon fill='%23e6d3bd' points='1600 360 0 660 0 550 1600 250'/%3E%3Cpolygon fill='%23e0cab0' points='1600 460 0 760 0 650 1600 350'/%3E%3Cpolygon fill='%23DAC0A3' points='1600 800 0 800 0 750 1600 450'/%3E%3C/g%3E%3C/svg%3E");
+    background-attachment: fixed;
+    background-size: cover;
+    transition: .3s ease;
+}
+
+.passive {
+    background-color: black;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25' viewBox='0 0 1600 800'%3E%3Cg %3E%3Cpolygon fill='%23220000' points='1600 160 0 460 0 350 1600 50'/%3E%3Cpolygon fill='%23440000' points='1600 260 0 560 0 450 1600 150'/%3E%3Cpolygon fill='%23660000' points='1600 360 0 660 0 550 1600 250'/%3E%3Cpolygon fill='%23880000' points='1600 460 0 760 0 650 1600 350'/%3E%3Cpolygon fill='%23A00' points='1600 800 0 800 0 750 1600 450'/%3E%3C/g%3E%3C/svg%3E");
+    background-attachment: fixed;
+    background-size: cover;
+    transition: .3s ease;
+}
