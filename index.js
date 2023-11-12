@@ -170,7 +170,6 @@ function toggleLightMode () {
             vimerDarkArea.setAttribute('src', './public/images/vimer-dark.png');
         }
 
-
         // Toggle the necessary classes that simulate the light mode
         body.classList.toggle("active");
         textContainer.classList.toggle("light-mode");
@@ -910,7 +909,7 @@ function hasListElements(selection) {
 }
 
 /**
- * Functions that aren't related to text modifications
+ * TECHNICAL FUNCTIONS
  * 
  * placeCursor()
  * 
@@ -1134,8 +1133,8 @@ function placeCursorAtEnd() {
     selection.addRange(range);   
 }
   
-  
-updateClock();
+
+// updateClock();
 toggleLightMode();
 toggleTooltips();
 scrollToTop();
