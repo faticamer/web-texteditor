@@ -15,18 +15,18 @@ Click [here](https://faticamer.github.io/vimer-texteditor/) to see it live in ac
 
 - Import .txt file
 - Change Font Family
+- Change Font Color
 - Increase Font Size
 - Decrease Font Size
 - Bold
 - Italic
 - Underline
+- Line Spacing
 - Align-left
 - Alight-right
 - Align-center
 - Justify Content
 - Word Capitalize
-- Bullet List
-- Number List
 - Add Hyperlink
 - Purify Content
 - Export as .txt
