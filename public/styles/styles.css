@@ -21,6 +21,7 @@
  * Page-head............The main page header.
  * Page-foot............The main page footer.
  * Buttons..............Button elements.
+ * Webkit Scrollbar.....Y-axis scrollbar
  *
  * JAVASCRIPT
  * Dynamic classes......Classes added/modified through JS
@@ -59,6 +60,7 @@ body {
     background-attachment: fixed;
     background-size: cover;
     transition: .3s ease;
+    overflow-x: hidden;    
 }
 
 
@@ -132,8 +134,8 @@ body {
 }
 
 .notepad-container {     
-    width: 70%;
-    height: 70%;
+    width: 80%;
+    height: 75%;
     margin-bottom: 60px;
 }
 
@@ -526,7 +528,7 @@ span            { color: azure;   }
 
 .button-dark-mode {
     flex-grow: 1;
-    padding: 20px 20px;   
+    padding: 15px 15px;   
     text-align: center;
     background-color: #42413f;
     transition: all 0.3s ease 0s;    
@@ -536,7 +538,7 @@ span            { color: azure;   }
 .button-light-mode {    
     background-color: #EADBC8;
     flex-grow: 1;
-    padding: 20px 20px;   
+    padding: 15px 15px;   
     text-align: center;    
     transition: all 0.3s ease 0s;
     border: none;
@@ -646,6 +648,27 @@ span            { color: azure;   }
     border: none;
     display: block;     
 }
+
+/**
+* WEBKIT SCROLLBAR
+*/
+
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #6c6b6b;
+    border-radius: 6px;    
+}
+
+::-webkit-scrollbar.thumb:hover {
+    background-color: #c0c0c0;
+}
+
+::-webkit-scrollbar-track {
+    background-color: #1A1A1A;
+}    
 
 /*------------------------------------*\
   #JAVASCRIPT

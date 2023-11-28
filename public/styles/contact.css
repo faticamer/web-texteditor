@@ -44,3 +44,24 @@ body {
     background-size: cover;
     transition: .3s ease;
 }
+
+/**
+* WEBKIT SCROLLBAR
+*/
+
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #6c6b6b;
+    border-radius: 6px;    
+}
+
+::-webkit-scrollbar.thumb:hover {
+    background-color: #c0c0c0;
+}
+
+::-webkit-scrollbar-track {
+    background-color: #1A1A1A;
+}

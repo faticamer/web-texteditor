@@ -7,6 +7,11 @@ const colorPickerButton = document.getElementById("color-picker-button");
 const colorPicker = document.getElementById("color-picker");
 let timeoutId;
 let initialLineHeightValue = 1.1;
+const fontColorData = {
+    isColoredForAllSpans : false,
+    rgbValue : ""
+};
+let finalFont = '';
 
 /*Commit test*/
 
@@ -268,18 +273,23 @@ function selectFontStyle() {
     const query = "\n\nSpecify Font-family, make sure the family exists:";
     const defaultFont = "Poppins, sans-serif";
 
-    const inputFont = prompt(note + query);
-    if(inputFont === null) {
-        textContainer.style.fontFamily = defaultFont;
+    const selection = window.getSelection();    
+    if(selection.toString().trim('') !== '') {
+        alert("Font Family cannot be applied to phrases/single words, only on the whole text.");
+        return;
     } else {
-        const finalFont = inputFont + ", sans-serif";
-
-        // There will be no checks done for the input
-        textContainer.style.fontFamily = finalFont;
-        const spanElements = textContainer.querySelectorAll('span')
-        spanElements.forEach(spanElement => {
-            spanElement.style.fontFamily = finalFont;
-        })
+        const inputFont = prompt(note + query);
+        if(inputFont === null) {
+            textContainer.style.fontFamily = defaultFont;
+        } else {
+            finalFont = inputFont + ", sans-serif";            
+            // There will be no checks done for the input
+            textContainer.style.fontFamily = finalFont;
+            const spanElements = textContainer.querySelectorAll('span')
+            spanElements.forEach(spanElement => {
+                spanElement.style.fontFamily = finalFont;
+            })
+        }
     }
 }
 
@@ -287,6 +297,8 @@ function changeFontColor(event) {
     /**
      * Check if any text is selected, if not apply color change to the whole text
      */
+
+    // Does not work when more than one word is selected
     const selection = window.getSelection();    
     const range = selection.getRangeAt(0);
     if(
@@ -294,19 +306,48 @@ function changeFontColor(event) {
         range.startOffset < range.endOffset &&
         range.startContainer.nodeType === Node.TEXT_NODE
     ) {
-        console.log("Condition satisfied");
-
         // Condition satisfied - User selected a single word
         const spanElement = range.startContainer.parentNode;
 
         // Apply font color if no font color is present
         spanElement.style.color = event.target.value;
-    } else {
-        const spans = textContainer.querySelectorAll('span');
-        spans.forEach(span => {
-            span.style.color = event.target.value;
-        })  
     }
+
+    // Condition that checks if more than one word has been selected
+    // Also covers the case where whole text is selected
+    if(selection.toString().split(/\s+/).length > 1) {        
+        // Clone the content within the range
+        const clonedContent = range.cloneContents();
+
+        // Create a temporary div to manipulate cloned content
+        const tempDiv = document.createElement('div');
+        tempDiv.appendChild(clonedContent);
+
+        // Get all the spans within temp div
+        const spanElements = tempDiv.querySelectorAll('span');
+
+        // Apply the color to each span
+        spanElements.forEach(spanElement => {
+            spanElement.style.color = event.target.value;
+        })
+        
+        // Set the object's value so wrapNewText() method can track the changes
+        fontColorData.isColoredForAllSpans = true;
+        fontColorData.rgbValue = event.target.value;
+
+        range.deleteContents();
+        insertChildren(tempDiv, range);
+
+        range.commonAncestorContainer.normalize();
+        clearEmptySpans(); // Clear any empty spans
+
+    } 
+
+    // Focus on container
+    textContainer.focus();
+
+    // Place the cursor at the end of the selection
+    placeCursor();
 }
 
 function increaseFontSize () {
@@ -626,7 +667,7 @@ function checkAndApplySelectionBoldV2() {
     // Get user selection
     const selection = window.getSelection();
 
-    if (selection.rangeCount >= 0) {
+    if (selection) {
         const range = selection.getRangeAt(0);        
         if (
             range.startContainer === range.endContainer &&  // Start and end containers are the same
@@ -665,7 +706,8 @@ function checkAndApplySelectionBoldV2() {
 
         range.commonAncestorContainer.normalize();
         clearEmptySpans(); // clear any empty spans        
-    }
+    } else 
+        return;
 
     // Place the cursor at the end of the selection - deactivate selection
     placeCursor();
@@ -678,7 +720,7 @@ function checkAndApplySelectionItalicV2() {
     // Get user selection
     const selection = window.getSelection();
 
-    if (selection.rangeCount >= 0) {
+    if (selection) {
         const range = selection.getRangeAt(0);        
         if (
             range.startContainer === range.endContainer &&  // Start and end containers are the same
@@ -718,7 +760,8 @@ function checkAndApplySelectionItalicV2() {
 
         range.commonAncestorContainer.normalize();
         clearEmptySpans(); // clear any empty spans        
-    }
+    } else
+        return;
 
     // Place the cursor at the end of the selection - deactivate selection
     placeCursor();
@@ -731,7 +774,7 @@ function checkAndApplySelectionUnderlineV2() {
     // Get user selection
     const selection = window.getSelection();
 
-    if (selection.rangeCount >= 0) {
+    if (selection) {
         const range = selection.getRangeAt(0);        
         if (
             range.startContainer === range.endContainer &&  // Start and end containers are the same
@@ -770,7 +813,8 @@ function checkAndApplySelectionUnderlineV2() {
 
         range.commonAncestorContainer.normalize();
         clearEmptySpans(); // clear any empty spans        
-    }
+    } else 
+        return;
 
     // Place the cursor at the end of the selection - deactivate selection
     placeCursor();
@@ -784,7 +828,7 @@ function checkAndApplySelectionCapitalizeV2() {
     // Get user selection
     const selection = window.getSelection();
 
-    if (selection.rangeCount >= 0) {
+    if (selection) {
         const range = selection.getRangeAt(0);        
         if (
             range.startContainer === range.endContainer &&  // Start and end containers are the same
@@ -823,7 +867,8 @@ function checkAndApplySelectionCapitalizeV2() {
 
         range.commonAncestorContainer.normalize();
         clearEmptySpans(); // clear any empty spans        
-    }
+    } else 
+        return;
 
     // Place the cursor at the end of the selection - deactivate selection
     placeCursor();
@@ -958,16 +1003,27 @@ function placeCursor() {
 }
 
 function wrapNewText() {
-    
+    // UPDATE: Walk through all nodes and check if all nodes have the same font color value
+    const spans = textContainer.querySelectorAll('span');
+    let firstChildSpan = textContainer.querySelector('span:first-child');    
+    for(let i = 0; i < spans.length; i++) {
+        if(spans[i].style.color !== firstChildSpan.style.color) {
+            console.log("Loop broken.");
+            break;
+        }            
+        fontColorData.isColoredForAllSpans = true;
+    }    
+
     // Get the textContent of textContainer
     const textContent = textContainer.textContent;    
 
     // Split the text into words using regex
     const words = textContent.split(/\s+/);
 
+    // Store the last span in a textContent area in a variable
     const lastSpan = textContainer.querySelector('span:last-child');
 
-    if(containsTextNode(textContainer)) {
+    if(containsTextNode(textContainer)) {        
         // Create and append span element for each word, preserving white spaces
         textContainer.innerHTML = '';
         for(const word of words) {
@@ -979,39 +1035,137 @@ function wrapNewText() {
             const space = document.createTextNode(' ');
             textContainer.appendChild(space);
         }
-    } else if((!containsTextNode(textContainer)) && (!hasClasses(textContainer.querySelector('span:last-child')))) {
+    } else if(
+        (!containsTextNode(textContainer)) && 
+        (!hasClasses(textContainer.querySelector('span:last-child'))) &&
+        (!hasStyleAttribute(textContainer.querySelector('span:last-child')))
+        ) {            
+        // Condition satisfied when there already exists some content in a textContent area
+        /**
+         * Explanation for the condition above:
+         * After the initial text has been added, spans will be assigned to it. This is performed after the first 
+         * check (which is in the if block above). If block only checks if textContent area is empty. This condition
+         * however makes sure that the nodes within input indeed have spans wrapped around them, but also checks if
+         * the last span has or does not have a class applied. If it does have some class, else block will be 
+         * executed, otherwise, code below is executed.
+         *  
+         * */ 
+        
         const words = lastSpan.textContent.split(/\s+/);
         textContainer.removeChild(lastSpan); // Remove the last span
         
         for (const word of words) {
             const span = document.createElement('span');
-            span.textContent = word;
+            span.textContent = word;                
             textContainer.appendChild(span);
 
             // Append white space character after each word
             const space = document.createTextNode(' ');
             textContainer.appendChild(space);
-        }
+        }                        
     } else {
-                
-        const spanClass = lastSpan.classList.value;
-        const words = lastSpan.textContent.split(/\s+/);                
-        // const wordsToStore = words.slice(1); // Ignore the first word
-        textContainer.removeChild(lastSpan); // Remove the last span          
-        
-        for(let i = 0; i < words.length; i++) {
-            const span = document.createElement('span');
-            span.textContent = words[i];
-            if(i == 0) {
-                // If there was any class within the last span, we need to save the class
-                // and apply it to the first word, when new sequence of spans is to be generated 
-                span.classList.add(spanClass);
-            }            
-            textContainer.appendChild(span);
+        // Store the last span in a variable                        
+        const lastSpan = textContainer.querySelector('span:last-child');
 
-            // Append white space character after each word
-            const space = document.createTextNode(' ');
-            textContainer.appendChild(space);
+        // If last span has some class, but has no style attribute
+        if(hasClasses(lastSpan) && !hasStyleAttribute(lastSpan)) {
+            const spanClass = lastSpan.classList.value;
+            console.log(spanClass);
+            const words = lastSpan.textContent.split(/\s+/);            
+            textContainer.removeChild(lastSpan); // Remove the last span          
+            
+            for(let i = 0; i < words.length; i++) {
+                const span = document.createElement('span');
+                span.textContent = words[i];
+                if(i == 0) {
+                    // If there was any class within the last span, we need to save the class
+                    // and apply it to the first word, when new sequence of spans is to be generated 
+                    // We also need to handle when there is a font color applied to the last word
+                    // since it isn't applied in form of class, but rather using style attribute.
+                    
+                    // We need to check if there are multiple classes applied to a span, if there are, 
+                    // JS won't allow us to add them because there is a whitespace separating them. Because
+                    // of that, we need to check if whitespace present, and use the return value as a confirmation
+                    // that there are multiple classes. Later on, each class will be a separate word, when whitespace
+                    // gets removed. Afterwards, we will add those classes to the span.
+                    if((/\s+/).test(spanClass)) {
+                        const classes = spanClass.split(/\s+/);
+                        for(let i = 0; i < classes.length; i++) {
+                            span.classList.add(classes[i]);
+                        }
+                    } else {
+                        span.classList.add(spanClass);
+                    }
+                }                
+                textContainer.appendChild(span);
+
+                // Append white space character after each word
+                const space = document.createTextNode(' ');
+                textContainer.appendChild(space);
+            }
+        }
+        // If last span does not have any class, but has a style attribute
+        else if(!hasClasses(lastSpan) && hasStyleAttribute(lastSpan)) {            
+            const spanStyle = lastSpan.style.cssText.trim();
+            const words = lastSpan.textContent.split(/\s+/);
+            textContainer.removeChild(lastSpan);
+
+            for(let i = 0; i < words.length; i++) {
+                const span = document.createElement('span');
+                span.textContent = words[i];
+                if(i == 0) {
+                    span.style.cssText = spanStyle;
+                }
+                if(fontColorData.isColoredForAllSpans === true && i != 0) {                            
+                    span.style.color = fontColorData.rgbValue;
+                    span.style.fontFamily = finalFont;     
+                }    
+                textContainer.appendChild(span);
+
+                // Append a white space character after each word
+                const space = document.createTextNode(' ');
+                textContainer.appendChild(space);
+            }
+            fontColorData.isColoredForAllSpans = false;
+        }
+        // Case where both style and class are present
+        else {
+            const spanStyle = lastSpan.style.cssText.trim();
+            const spanClass = lastSpan.classList.value;
+            const words = lastSpan.textContent.split(/\s+/);
+            textContainer.removeChild(lastSpan);
+
+            for(let i = 0; i < words.length; i++) {
+                const span = document.createElement('span');
+                span.textContent = words[i];
+                if(i == 0) {
+                    // Condition to determine if there are multiple classes applied to span
+                    if((/\s+/).test(spanClass)) {
+                        const classes = spanClass.split(/\s+/);
+                        for(let i = 0; i < classes.length; i++) {
+                            span.classList.add(classes[i]);
+                        }
+                    } else {
+                        span.classList.add(spanClass);
+                    }
+
+                    // Add style, if any
+                    span.style.cssText = spanStyle;
+                    span.style.fontFamily = finalFont;
+                }
+                
+                if(fontColorData.isColoredForAllSpans === true) {
+                    console.log("Color data: ", fontColorData.rgbValue);                    
+                    span.style.color = fontColorData.rgbValue;               
+                }
+
+                textContainer.appendChild(span);
+
+                // Append a white space character after each word
+                const space = document.createTextNode(' ');
+                textContainer.appendChild(space);
+            }
+            fontColorData.isColoredForAllSpans = false;
         }
     }
 }
@@ -1021,39 +1175,23 @@ function hasClasses(element) {
       return element.classList.length > 0;
     }
     return false;
-  }
+}
+
+function hasStyleAttribute(element) {
+    if (element.tagName === 'SPAN') {
+      return element.style.cssText.trim() !== '';
+    }
+    return false;
+}
 
 function containsTextNode(container) {
     for(let i = 0; i < container.childNodes.length; i++) {
-        const node = container.childNodes[i];
+        const node = container.childNodes[i];        
         if(node.nodeType !== Node.TEXT_NODE) {
             return false;
         }
     }
     return true;
-}
-
-function updateClock() {
-    const clockTitle = document.getElementById("time");
-
-    setInterval(function() {
-        const now = new Date();
-        const hours = now.getHours();
-        const minutes = now.getMinutes();
-        const seconds = now.getSeconds();
-
-        // Determine AM/PM
-        const ampm = hours >= 12 ? "PM" : "AM";
-
-        // Convert to 12/hr clock
-        const formattedHours = hours % 12 || 12;
-
-        // Format : HH/MM/SS
-        const timeString = `${formattedHours}:${(minutes < 10 ? '0' : '') + minutes}:${(seconds < 10 ? '0' : '') + seconds} ${ampm}`;
-
-        // Update the title in HTML
-        clockTitle.textContent = timeString;
-    }, 1000);
 }
 
 function redirectToVimer() {
